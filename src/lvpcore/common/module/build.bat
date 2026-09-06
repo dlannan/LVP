@@ -1,0 +1,50 @@
+@echo off
+setlocal
+
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+
+set CONFIG=%~1
+if "%CONFIG%"=="" set CONFIG=Release
+
+if /I not "%CONFIG%"=="Debug" if /I not "%CONFIG%"=="Release" (
+    echo Usage: build.bat [Debug^|Release]
+    exit /b 1
+)
+
+set ROOT=%~dp0
+set OUT=%ROOT%..\lib\%CONFIG%
+
+if not exist "%OUT%" mkdir "%OUT%"
+
+echo.
+echo ========================================
+echo Building module.lib - %CONFIG%
+echo ========================================
+echo.
+
+if /I "%CONFIG%"=="Debug" (
+    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi
+) else (
+    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2
+)
+
+cl %CFLAGS% /c /nologo ^
+    /I"%ROOT%include" ^
+    "%ROOT%src\module.cpp"
+
+if errorlevel 1 exit /b 1
+
+lib /nologo ^
+    /OUT:"%OUT%\module.lib" ^
+    module.obj
+
+if errorlevel 1 exit /b 1
+
+del /q module.obj 2>nul
+
+echo.
+echo Built:
+echo   %OUT%\module.lib
+echo.
+
+endlocal
