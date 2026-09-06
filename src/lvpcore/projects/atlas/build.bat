@@ -33,7 +33,7 @@ if /I "%CONFIG%"=="Debug" (
 ) 
 
 set LINK=%LINK_DEBUG% ^
-    "..\..\common\lib\%CONFIG%\module.lib" ^
+    "..\..\common\lib\%CONFIG%\state.lib" ^
     "..\..\common\lib\%CONFIG%\packet_interface.lib" ^
     "..\..\common\lib\%CONFIG%\libuv.lib" ^
     "User32.lib" ^
@@ -51,6 +51,9 @@ cl %CFLAGS% /nologo ^
     /I"%ROOT%src" ^
     "%ROOT%src\atlas.cpp" ^
     "%ROOT%src\main.cpp" ^
+    "%ROOT%src\stateRegistration.cpp" ^
+    "%ROOT%src\stateForwarding.cpp" ^
+    "%ROOT%src\stateControl.cpp" ^
     /Fe:%OUT%\atlas.exe ^
     %LINK%
 
@@ -58,8 +61,7 @@ if not exist bin\Debug mkdir bin\Debug
 
 if errorlevel 1 exit /b 1
 
-del /q atlas.obj 2>nul
-del /q main.obj 2>nul
+del /q *.obj 2>nul
 
 echo.
 echo Built:

@@ -18,7 +18,7 @@ if not exist "%OUT%" mkdir "%OUT%"
 
 echo.
 echo ========================================
-echo Building module.lib - %CONFIG%
+echo Building state.lib - %CONFIG%
 echo ========================================
 echo.
 
@@ -30,21 +30,24 @@ if /I "%CONFIG%"=="Debug" (
 
 cl %CFLAGS% /c /nologo ^
     /I"%ROOT%include" ^
-    "%ROOT%src\module.cpp"
+    "%ROOT%src\state.cpp" ^
+    "%ROOT%src\state_manager.cpp"
 
 if errorlevel 1 exit /b 1
 
 lib /nologo ^
-    /OUT:"%OUT%\module.lib" ^
-    module.obj
+    /OUT:"%OUT%\state.lib" ^
+    state.obj ^
+    state_manager.obj 
 
 if errorlevel 1 exit /b 1
 
-del /q module.obj 2>nul
+del /q state.obj 2>nul
+del /q state_manager.obj 2>nul
 
 echo.
 echo Built:
-echo   %OUT%\module.lib
+echo   %OUT%\state.lib
 echo.
 
 endlocal

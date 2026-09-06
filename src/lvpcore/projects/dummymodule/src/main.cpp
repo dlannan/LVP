@@ -1,4 +1,4 @@
-#include "module.h"
+#include "state.h"
 
 #include "../../common/packet_interface/include/packet_interface.h"
 
@@ -8,17 +8,18 @@
 
 int main(int argc, char* argv[])
 {
-    if (argc != 2)
+    if (argc != 3)
     {
-        std::cerr << "usage: dummymodule <port>\n";
+        std::cerr << "usage: dummystate <name> <port>\n";
         return 1;
     }
 
-    const int portValue = std::stoi(argv[1]);
+    std::string nameValue = std::string(argv[1]);
+    const int portValue = std::stoi(argv[2]);
 
     if (portValue < 1 || portValue > 65535)
     {
-        std::cerr << "dummymodule: invalid port\n";
+        std::cerr << "dummystate: invalid port\n";
         return 1;
     }
 
@@ -33,58 +34,58 @@ int main(int argc, char* argv[])
 
     config.port = DummyPort;
     config.atlas = "atlas";
-    config.role = packet_interface_role::module;
+    config.role = packet_interface_role::state;
 
     packet_interface pi(config);
 
     if (!pi.Init())
     {
-        std::cerr << "dummy: packet_interface initialisation failed\n";
+        std::cerr << nameValue << ": packet_interface initialisation failed\n";
         return 1;
     }
 
-    module_stream& input = pi.readStream();
-    module_stream& output = pi.writeStream();
+    state_stream& input = pi.readStream();
+    state_stream& output = pi.writeStream();
 
-    dummy module;
+    dummy state(nameValue.c_str());
 
-    if (!module.Init(input, output))
+    if (!state.Init(input, output))
     {
-        std::cerr << "dummy: Init failed\n";
+        std::cerr << nameValue << ": Init failed\n";
 
         pi.Finish();
 
         return 1;
     }
 
-    if (!module.Begin())
+    if (!state.Begin())
     {
-        std::cerr << "dummy: Begin failed\n";
+        std::cerr << nameValue << ": Begin failed\n";
 
-        module.Finish();
+        state.Finish();
         pi.Finish();
 
         return 1;
     }
 
-    std::cout << "dummy running...\n";
+    std::cout <<  nameValue << ": running...\n";
     bool running = true;
 
     while (running)
     {
         const int packetResult = pi.Update();
 
-        module.PreUpdate();
+        state.PreUpdate();
 
-        const int moduleResult = module.Update();
+        const int stateResult = state.Update();
 
-        module.PostUpdate();
+        state.PostUpdate();
 
         (void)packetResult;
-        (void)moduleResult;
+        (void)stateResult;
     }
 
-    module.Finish();
+    state.Finish();
     pi.Finish();
 
     return 0;

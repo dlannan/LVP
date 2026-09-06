@@ -33,7 +33,7 @@ if /I "%CONFIG%"=="Debug" (
 ) 
 
 set LINK=%LINK_DEBUG% ^
-    "..\..\common\lib\%CONFIG%\module.lib" ^
+    "..\..\common\lib\%CONFIG%\state.lib" ^
     "..\..\common\lib\%CONFIG%\packet_interface.lib" ^
     "..\..\common\lib\%CONFIG%\libuv.lib" ^
     "User32.lib" ^
@@ -49,15 +49,14 @@ set LINK=%LINK_DEBUG% ^
 cl %CFLAGS% /nologo ^
     /I"..\..\common\include" ^
     /I"%ROOT%src" ^
-    "%ROOT%src\module.cpp" ^
+    "%ROOT%src\state.cpp" ^
     "%ROOT%src\main.cpp" ^
     /Fe:"%OUT%\dummymodule.exe" ^
     %LINK%
 
 if errorlevel 1 exit /b 1
 
-del /q dummymodule.obj 2>nul
-del /q main.obj 2>nul
+del /q *.obj 2>nul
 
 echo.
 echo Built:

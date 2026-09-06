@@ -1,4 +1,4 @@
-#include "module.h"
+#include "state.h"
 
 #include <iostream>
 
@@ -10,11 +10,12 @@ namespace
     constexpr const char* RegisteredCommand = "registered";
 }
 
-dummy::dummy()
+dummy::dummy( const char * name = DummyName )
     : m_input(nullptr)
     , m_output(nullptr)
     , m_uid(0)
     , m_running(false)
+    , m_name(name)
 {
 }
 
@@ -23,40 +24,39 @@ dummy::~dummy()
     Finish();
 }
 
-bool dummy::Init( module_stream& input, module_stream& output)
+bool dummy::Init( state_stream& input, state_stream& output)
 {
     m_input = &input;
     m_output = &output;
 
-    std::cout << "dummy: Init\n";
+    std::cout << m_name << ": Init\n";
     return true;
 }
 
 bool dummy::Begin()
 {
-    if (m_input == nullptr ||
-        m_output == nullptr)
+    if (m_input == nullptr || m_output == nullptr)
     {
         return false;
     }
 
-    std::cout << "dummy: Begin\n";
+    std::cout << m_name << ": Begin\n";
 
-    module_packet packet;
+    state_packet packet;
 
     packet.envelope.uid = 0;
-    packet.envelope.owner = DummyName;
+    packet.envelope.owner = m_name.c_str();
     packet.envelope.target = AtlasName;
     packet.envelope.memoryScope = "local";
     packet.metadata.push_back({ "command", "register" });
 
     if (!m_output->write(packet))
     {
-        std::cout << "dummy: failed to queue registration\n";
+        std::cout << m_name << ": failed to queue registration\n";
         return false;
     }
 
-    std::cout << "dummy: registration queued\n";
+    std::cout << m_name << ": registration queued\n";
     m_running = true;
 
     return true;
@@ -76,7 +76,7 @@ int dummy::Update()
 
     int processed = 0;
 
-    module_packet packet;
+    state_packet packet;
 
     while (m_input->read(packet))
     {
@@ -96,20 +96,20 @@ int dummy::Update()
 
         if (!isRegistered)
         {
-            std::cout << "dummy: ignoring packet\n";
+            std::cout << m_name << ": ignoring packet\n";
             continue;
         }
 
-        if (packet.envelope.target != DummyName)
+        if (packet.envelope.target != m_name)
         {
-            std::cout << "dummy: registration response has incorrect target\n";
+            std::cout << m_name << ": registration response has incorrect target\n";
             continue;
         }
 
         if (m_uid != 0)
         {
             std::cout
-                << "dummy: ignoring registration response; "
+                << m_name << ": ignoring registration response; "
                 << "already registered\n";
             continue;
         }
@@ -117,7 +117,7 @@ int dummy::Update()
         m_uid = packet.envelope.uid;
 
         std::cout
-            << "dummy: registered with atlas uid="
+            << m_name << ": registered with atlas uid="
             << m_uid
             << '\n';
     }
@@ -137,6 +137,6 @@ void dummy::Finish()
         return;
     }
 
-    std::cout << "dummy: Finish\n";
+    std::cout << m_name << ": Finish\n";
     m_running = false;
 }

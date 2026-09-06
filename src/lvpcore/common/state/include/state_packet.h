@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 
-struct module_metadata
+struct state_metadata
 {
     std::string key;
     std::string value;
 };
 
-struct module_envelope
+struct state_envelope
 {
     std::uint64_t uid = 0;
     std::uint64_t timestamp = 0;
@@ -20,11 +20,11 @@ struct module_envelope
     std::string memoryScope;
 };
 
-struct module_packet
+struct state_packet
 {
-    module_envelope envelope;
+    state_envelope envelope;
 
-    std::vector<module_metadata> metadata;
+    std::vector<state_metadata> metadata;
 
     std::vector<std::uint8_t> payload;
 };

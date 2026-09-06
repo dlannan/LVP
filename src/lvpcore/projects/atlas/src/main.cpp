@@ -1,6 +1,6 @@
 #include "atlas.h"
 
-#include "../../common/module/include/module.h"
+#include "../../common/state/include/state.h"
 #include "../../common/packet_interface/include/packet_interface.h"
 
 #include <cstdint>
@@ -27,51 +27,42 @@ int main()
         return 1;
     }
 
-    module_stream& input = pi.readStream();
-    module_stream& output = pi.writeStream();
+    state_stream& input = pi.readStream();
+    state_stream& output = pi.writeStream();
 
-    atlas module;
+    atlas master;
 
-    if (!module.Init(input, output))
+    if (!master.Init(input, output))
     {
         std::cerr << "atlas: Init failed\n";
         pi.Finish();
         return 1;
     }
 
-    if (!module.Begin())
+    if (!master.Begin())
     {
         std::cerr << "atlas: Begin failed\n";
-        module.Finish();
+        master.Finish();
         pi.Finish();
         return 1;
     }
 
-    std::cout << "atlas running...\n";
-
     bool running = true;
+
+    std::cout << "atlas running...\n";
 
     while (running)
     {
         const int packetStatus = pi.Update();
 
-        module.PreUpdate();
+        master.PreUpdate();
 
-        const int moduleStatus = module.Update();
+        master.Update();
 
-        module.PostUpdate();
-
-        /*
-         * Status handling will be defined later.
-         *
-         * For now, keep the loop alive and simply
-         * allow both subsystems to advance.
-         */
-        (void)packetStatus;
-        (void)moduleStatus;
+        master.PostUpdate();
     }
 
-    module.Finish();
+    master.Finish();
     pi.Finish();
 
     return 0;

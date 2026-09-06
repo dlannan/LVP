@@ -1,13 +1,20 @@
 #pragma once
 
-#include "../../module/include/module_stream.h"
+#include "../../state/include/state_stream.h"
 
 #include <cstdint>
 #include <string>
 
+enum class packet_interface_atlas_domain
+{
+    local,
+    dns,
+    ip
+};
+
 enum class packet_interface_role
 {
-    module,
+    state,
     atlas
 };
 
@@ -15,7 +22,8 @@ struct packet_interface_config
 {
     std::uint16_t port = 0;
     std::string atlas;
-    packet_interface_role role = packet_interface_role::module;
+    packet_interface_atlas_domain domain = packet_interface_atlas_domain::local;
+    packet_interface_role role = packet_interface_role::state;
 };
 
 class packet_interface
@@ -35,8 +43,8 @@ class packet_interface
 
     void Finish();
 
-    module_stream& readStream();
-    module_stream& writeStream();
+    state_stream& readStream();
+    state_stream& writeStream();
 
 
 private:

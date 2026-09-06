@@ -3,17 +3,25 @@
 #include <iostream>
 #include <string>
 
-namespace
-{
-    constexpr const char* RegistrationTarget = "atlas";
-    constexpr const char* RegistrationCommand = "register";
-}
+// Atlas 
+//   Atlas is like a dns service for processes. 
+//   Processes register with atlas, and then all send/recv from process <-> process occurs via atlas.
+//   All data streaming is transport agnostic: meaning that this data can be moved via a file stream,
+//      a memory stream, or a network stream. As far as atlas knows its all the same.
+//   Benefits: Video/Audio/Data can all use realtime, or offline data streams without any change in 
+//      process development. Thus a plugin made externally works regardless of the type of transport.
+//
+//   Operation:
+//      1. Atlas listens to register/unregister commands and adds/removes from its table.
+//      2. Listens to routing commands and forwards streams to the correct process handles.
+//      3. Listens to Zeus for command and control operations.
+
+
 
 atlas::atlas()
     : m_input(nullptr)
     , m_output(nullptr)
     , m_running(false)
-    , m_nextUid(1)
 {
 }
 
@@ -22,27 +30,23 @@ atlas::~atlas()
     Finish();
 }
 
-bool atlas::Init(module_stream& input, module_stream& output)
+bool atlas::Init(state_stream& input, state_stream& output)
 {
     m_input = &input;
     m_output = &output;
 
-    std::cout << "atlas: Init\n";
+    m_registration.Init(input, output);
 
+    m_smanager.Init();
+    m_smanager.CreateState("stateRegistration", &m_registration);
+    
+    std::cout << "atlas: Init\n";
     return true;
 }
 
 bool atlas::Begin()
 {
-    if (m_input == nullptr || m_output == nullptr)
-    {
-        return false;
-    }
-
-    std::cout << "atlas: Begin\n";
-
-    m_running = true;
-
+    m_smanager.ChangeState("stateRegistration");
     return true;
 }
 
@@ -51,89 +55,11 @@ void atlas::PreUpdate()
     // Reserved for future pre-update processing.
 }
 
-int atlas::Update()
+void atlas::Update()
 {
-    if (!m_running || m_input == nullptr)
-    {
-        return 0;
-    }
-
-    int processed = 0;
-
-    module_packet packet;
-
-    while (m_input->read(packet))
-    {
-        ++processed;
-
-        std::cout
-            << "atlas: received packet"
-            << " uid=" << packet.envelope.uid
-            << " owner=" << packet.envelope.owner
-            << " target=" << packet.envelope.target
-            << " scope=" << packet.envelope.memoryScope
-            << '\n';
-
-        bool isRegistration = false;
-
-        for (const auto& metadata : packet.metadata)
-        {
-            if (metadata.key == "command" &&
-                metadata.value == RegistrationCommand)
-            {
-                isRegistration = true;
-                break;
-            }
-        }
-
-        if (!isRegistration)
-        {
-            std::cout << "atlas: ignoring packet\n";
-            continue;
-        }
-
-        if (packet.envelope.target != RegistrationTarget)
-        {
-            std::cout
-                << "atlas: registration packet has incorrect target\n";
-
-            continue;
-        }
-
-        const module_uid uid = m_nextUid++;
-
-        m_modules.emplace(
-            uid,
-            packet.envelope);
-
-        std::cout
-            << "atlas: registration request from "
-            << packet.envelope.owner
-            << " assigned uid="
-            << uid
-            << '\n';
-
-        module_packet response;
-
-        response.envelope.uid = uid;
-        response.envelope.owner = "atlas";
-        response.envelope.target = packet.envelope.owner;
-        response.envelope.memoryScope = packet.envelope.memoryScope;
-
-        response.metadata.push_back(
-            {
-                "command",
-                "registered"
-            });
-
-        if (!m_output->write(response))
-        {
-            std::cout
-                << "atlas: failed to queue registration response\n";
-        }
-    }
-
-    return processed;
+    m_smanager.Update(0, 0, 0);
+    m_smanager.Render();
+    return;
 }
 
 void atlas::PostUpdate()
@@ -143,12 +69,5 @@ void atlas::PostUpdate()
 
 void atlas::Finish()
 {
-    if (!m_running)
-    {
-        return;
-    }
-
-    std::cout << "atlas: Finish\n";
-
-    m_running = false;
+    m_registration.Finish();
 }

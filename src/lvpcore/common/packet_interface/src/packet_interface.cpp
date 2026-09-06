@@ -75,7 +75,7 @@ bool readString(const std::uint8_t*& cursor, std::size_t& remaining, std::uint32
     return true;
 }
 
-bool serialize( const module_packet& packet, std::vector<std::uint8_t>& buffer) 
+bool serialize( const state_packet& packet, std::vector<std::uint8_t>& buffer) 
 {
     wire_header header{};
 
@@ -116,7 +116,7 @@ bool serialize( const module_packet& packet, std::vector<std::uint8_t>& buffer)
     return true;
 }
 
-bool deserialize(const std::uint8_t* data, std::size_t size, module_packet& packet)
+bool deserialize(const std::uint8_t* data, std::size_t size, state_packet& packet)
 {
     const std::uint8_t* cursor = data;
     std::size_t remaining = size;
@@ -168,7 +168,7 @@ bool deserialize(const std::uint8_t* data, std::size_t size, module_packet& pack
             return false;
         }
 
-        module_metadata metadata;
+        state_metadata metadata;
 
         if (!readString(cursor, remaining, keySize, metadata.key))
         {
@@ -200,7 +200,7 @@ struct send_context
 
 }
 
-class packet_interface::stream final : public module_stream
+class packet_interface::stream final : public state_stream
 {
     public:
     bool available() const override
@@ -209,7 +209,7 @@ class packet_interface::stream final : public module_stream
         return !m_packets.empty();
     }
 
-    bool read(module_packet& packet) override
+    bool read(state_packet& packet) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_packets.empty())
@@ -221,28 +221,28 @@ class packet_interface::stream final : public module_stream
         return true;
     }
 
-    bool write(const module_packet& packet) override
+    bool write(const state_packet& packet) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_packets.push(packet);
         return true;
     }
 
-    bool pop(module_packet& packet)
+    bool pop(state_packet& packet)
     {
         return read(packet);
     }
 
     private:
     mutable std::mutex m_mutex;
-    std::queue<module_packet> m_packets;
+    std::queue<state_packet> m_packets;
 };
 
 struct packet_interface::transport
 {
     struct received_packet
     {
-        module_packet packet;
+        state_packet packet;
         sockaddr_in source{};
     };
 
@@ -251,7 +251,7 @@ struct packet_interface::transport
     uv_udp_t socket{};
 
     /*
-    * For a module interface this is the endpoint
+    * For a state interface this is the endpoint
     * of its Atlas.
     */
     sockaddr_in atlasEndpoint{};
@@ -259,7 +259,7 @@ struct packet_interface::transport
 
     /*
     * For an Atlas interface this maps logical
-    * module names to transport endpoints.
+    * state names to transport endpoints.
     */
     std::unordered_map<std::string, sockaddr_in> endpoints;
 
@@ -271,7 +271,14 @@ struct packet_interface::transport
 
     bool initialised = false;
 
-    void setAtlas() { uv_ip4_addr("127.0.0.1", 42000, &atlasEndpoint); }
+    void setAtlas(sockaddr_in addr  = {}) { 
+        if(addr.sin_port == 0 && addr.sin_family == 0) {
+            uv_ip4_addr("127.0.0.1", 42000, &atlasEndpoint); 
+        }
+        else {
+            atlasEndpoint = addr;
+        }
+    }
 
     static void allocBuffer( uv_handle_t*, std::size_t suggestedSize, uv_buf_t* buffer)
     {
@@ -285,7 +292,7 @@ struct packet_interface::transport
 
         if (nread > 0 && address != nullptr && address->sa_family == AF_INET)
         {
-            module_packet packet;
+            state_packet packet;
 
             if (deserialize(reinterpret_cast<const std::uint8_t*>(buffer->base), static_cast<std::size_t>(nread), packet))
             {
@@ -312,7 +319,20 @@ packet_interface::packet_interface(const packet_interface_config& config)
     , m_writeStream(new stream())
     , m_transport(new transport())
 {
-    m_transport->setAtlas();
+    if(config.domain == packet_interface_atlas_domain::local)
+        m_transport->setAtlas();
+    else if(config.domain == packet_interface_atlas_domain::dns)
+    {
+        addrinfo hints{};
+        hints.ai_family = AF_INET;
+        addrinfo* result = nullptr;
+
+        int ok = getaddrinfo(config.atlas.c_str(),nullptr, &hints, &result);
+        if(ok) { 
+            m_transport->setAtlas(*reinterpret_cast<sockaddr_in*>(result->ai_addr)); 
+            uv_freeaddrinfo(result);
+        }
+    }
 }
 
 packet_interface::~packet_interface()
@@ -386,7 +406,7 @@ int packet_interface::Update()
     uv_run(m_transport->loop, UV_RUN_NOWAIT);
 
     /*
-    * Move received packets into the module
+    * Move received packets into the state
     * input stream.
     *
     * Endpoint handling is deliberately kept
@@ -398,12 +418,12 @@ int packet_interface::Update()
         m_transport->received.pop();
 
         /*
-        * A module receives packets from Atlas.
+        * A state receives packets from Atlas.
         *
         * The first valid packet from the configured
         * Atlas establishes its transport endpoint.
         */
-        if (m_config.role == packet_interface_role::module)
+        if (m_config.role == packet_interface_role::state)
         {
             if (!m_transport->atlasKnown)
             {
@@ -421,7 +441,7 @@ int packet_interface::Update()
 
         /*
         * Atlas learns the transport endpoint of the
-        * module identified by the packet owner.
+        * state identified by the packet owner.
         */
         if (m_config.role == packet_interface_role::atlas)
         {
@@ -438,16 +458,16 @@ int packet_interface::Update()
     /*
     * Process outgoing packets.
     */
-    module_packet packet;
+    state_packet packet;
 
     while (m_writeStream->pop(packet))
     {
         sockaddr_in destination{};
         bool haveDestination = false;
 
-        if (m_config.role == packet_interface_role::module)
+        if (m_config.role == packet_interface_role::state)
         {
-            // Atlas is always known. Default is 42000 (this will be configurable for a module)
+            // Atlas is always known. Default is 42000 (this will be configurable for a state)
             destination = m_transport->atlasEndpoint;
             haveDestination = true;
         }
@@ -546,12 +566,12 @@ void packet_interface::Finish()
 
 }
 
-module_stream& packet_interface::readStream()
+state_stream& packet_interface::readStream()
 {
     return *m_readStream;
 }
 
-module_stream& packet_interface::writeStream()
+state_stream& packet_interface::writeStream()
 {
     return *m_writeStream;
 }
