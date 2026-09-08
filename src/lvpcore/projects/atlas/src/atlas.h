@@ -8,9 +8,9 @@
 #include <cstdint>
 #include <unordered_map>
 
-#include "stateRegistration.h"
-#include "stateForwarding.h"
-#include "stateControl.h"
+#include "states/stateRegistration.h"
+#include "states/stateForwarding.h"
+#include "states/stateControl.h"
 
 using state_uid = std::uint64_t;
 

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "../../common/state/include/state.h"
-#include "../../common/state/include/state_packet.h"
-#include "../../common/state/include/state_stream.h"
+#include "../../../common/state/include/state.h"
+#include "../../../common/state/include/state_packet.h"
+#include "../../../common/state/include/state_stream.h"
 
 #include <cstdint>
 #include <unordered_map>
 
 using state_uid = std::uint64_t;
 
-class stateControl : state
+class stateControl : public state
 {
 public:
     stateControl();
@@ -22,7 +22,7 @@ public:
     bool Begin() override;
 
     void PreUpdate() override;
-    void Update(int px, int py, int buttons) override;
+    //void Update(int px, int py, int buttons) override;
     void Render() override;
     void PostUpdate() override;
    

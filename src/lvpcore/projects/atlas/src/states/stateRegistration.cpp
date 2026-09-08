@@ -30,14 +30,11 @@ bool stateRegistration::Init(state_stream& input, state_stream& output)
 bool stateRegistration::Begin()
 {
     std::cout << "stateRegistration: Begin\n";
-
     if (m_input == nullptr || m_output == nullptr)
     {
         return false;
     }
-
     m_running = true;
-
     return true;
 }
 
@@ -52,17 +49,18 @@ void stateRegistration::Update(int px, int py, int buttons)
     {
         return;
     }
-
     int processed = 0;
+    bool do_process = true;
 
     state_packet packet;
 
-    while (m_input->read(packet))
+    if(m_input->check(packet))
     {
         ++processed;
 
+        std::cout << "reg Update\n" ;
         std::cout
-            << "atlas: received packet"
+            << "stateRegistration: received packet"
             << " uid=" << packet.envelope.uid
             << " owner=" << packet.envelope.owner
             << " target=" << packet.envelope.target
@@ -73,8 +71,8 @@ void stateRegistration::Update(int px, int py, int buttons)
 
         for (const auto& metadata : packet.metadata)
         {
-            if (metadata.key == "command" &&
-                metadata.value == RegistrationCommand)
+            std::cout << metadata.key << ":" << metadata.value << "\n";
+            if (metadata.key == "command" && metadata.value == RegistrationCommand)
             {
                 isRegistration = true;
                 break;
@@ -83,48 +81,46 @@ void stateRegistration::Update(int px, int py, int buttons)
 
         if (!isRegistration)
         {
-            std::cout << "atlas: ignoring packet\n";
-            continue;
+            std::cout << "stateRegistration: ignoring packet\n";
+            do_process = false;
         }
 
         if (packet.envelope.target != RegistrationTarget)
         {
-            std::cout
-                << "atlas: registration packet has incorrect target\n";
-
-            continue;
+            std::cout << "stateRegistration: registration packet has incorrect target\n";
+            do_process = false;
         }
 
-        const state_uid uid = m_nextUid++;
+        if(do_process) {
 
-        m_states.emplace(
-            uid,
-            packet.envelope);
+            m_input->read(packet);
+            const state_uid uid = m_nextUid++;
+            m_states.emplace(uid, packet.envelope);
 
-        std::cout
-            << "atlas: registration request from "
-            << packet.envelope.owner
-            << " assigned uid="
-            << uid
-            << '\n';
-
-        state_packet response;
-
-        response.envelope.uid = uid;
-        response.envelope.owner = "atlas";
-        response.envelope.target = packet.envelope.owner;
-        response.envelope.memoryScope = packet.envelope.memoryScope;
-
-        response.metadata.push_back(
-            {
-                "command",
-                "registered"
-            });
-
-        if (!m_output->write(response))
-        {
             std::cout
-                << "atlas: failed to queue registration response\n";
+                << "stateRegistration: registration request from "
+                << packet.envelope.owner
+                << " assigned uid="
+                << uid
+                << '\n';
+
+            state_packet response;
+
+            response.envelope.uid = uid;
+            response.envelope.owner = "atlas";
+            response.envelope.target = packet.envelope.owner;
+            response.envelope.memoryScope = packet.envelope.memoryScope;
+
+            response.metadata.push_back(
+                {
+                    "command",
+                    "registered"
+                });
+
+            if (!m_output->write(response))
+            {
+                std::cout << "stateRegistration: failed to queue registration response\n";
+            }
         }
     }
 
@@ -148,7 +144,7 @@ void stateRegistration::Finish()
         return;
     }
 
-    std::cout << "atlas: Finish\n";
+    std::cout << "stateRegistration: Finish\n";
 
     m_running = false;
 }

@@ -30,10 +30,11 @@ void stateControl::PreUpdate()
 
 }
 
-void stateControl::Update(int px, int py, int buttons) 
-{
+// void stateControl::Update(int px, int py, int buttons) 
+// {
 
-}
+
+// }
 
 void stateControl::Render()
 {

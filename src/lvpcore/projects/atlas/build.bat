@@ -51,13 +51,13 @@ cl %CFLAGS% /nologo ^
     /I"%ROOT%src" ^
     "%ROOT%src\atlas.cpp" ^
     "%ROOT%src\main.cpp" ^
-    "%ROOT%src\stateRegistration.cpp" ^
-    "%ROOT%src\stateForwarding.cpp" ^
-    "%ROOT%src\stateControl.cpp" ^
+    "%ROOT%src\states\stateRegistration.cpp" ^
+    "%ROOT%src\states\stateForwarding.cpp" ^
+    "%ROOT%src\states\stateControl.cpp" ^
     /Fe:%OUT%\atlas.exe ^
     %LINK%
 
-if not exist bin\Debug mkdir bin\Debug
+if not exist bin\%CONFIG% mkdir bin\%CONFIG%
 
 if errorlevel 1 exit /b 1
 

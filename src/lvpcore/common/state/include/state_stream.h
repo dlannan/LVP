@@ -12,6 +12,8 @@ public:
 
     virtual bool available() const = 0;
 
+    virtual bool check(state_packet& packet) = 0;
+
     virtual bool read(state_packet& packet) = 0;
 
     virtual bool write(const state_packet& packet) = 0;

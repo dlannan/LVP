@@ -47,9 +47,9 @@ int main(int argc, char* argv[])
     state_stream& input = pi.readStream();
     state_stream& output = pi.writeStream();
 
-    dummy state(nameValue.c_str());
+    dummy stateRegister(nameValue.c_str());
 
-    if (!state.Init(input, output))
+    if (!stateRegister.Init(input, output))
     {
         std::cerr << nameValue << ": Init failed\n";
 
@@ -58,11 +58,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (!state.Begin())
+    if (!stateRegister.Begin())
     {
         std::cerr << nameValue << ": Begin failed\n";
 
-        state.Finish();
+        stateRegister.Finish();
         pi.Finish();
 
         return 1;
@@ -75,17 +75,15 @@ int main(int argc, char* argv[])
     {
         const int packetResult = pi.Update();
 
-        state.PreUpdate();
+        stateRegister.PreUpdate();
 
-        const int stateResult = state.Update();
+        const int stateRegisterResult = stateRegister.Update();
 
-        state.PostUpdate();
+        stateRegister.PostUpdate();
 
-        (void)packetResult;
-        (void)stateResult;
     }
 
-    state.Finish();
+    stateRegister.Finish();
     pi.Finish();
 
     return 0;

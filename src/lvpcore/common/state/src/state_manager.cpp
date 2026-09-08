@@ -4,6 +4,11 @@
 // -- Simple State Manager.
 // ----------------------------------------------------------------
 
+// Notes:
+//  - State Manager has no memory responsibility over states - you are responsible!
+//  - States can be anyting as long as it adheres to the state iface.
+//  - For state sharing its recommended to create messages or handles that states can access.
+
 #include "state_manager.h"
 
 #include <string>
@@ -58,10 +63,10 @@ bool state_manager::Run()
 // -- Create a new state then return the state object
 void state_manager::AddSibling(std::string name, std::string ownerstate)
 {
-    if( states.contains(ownerstate) && states.contains(name)) { 
-        states[name]->owner = ownerstate;
+    if( states.contains(ownerstate) && states.contains(name)) {         
         states[ownerstate]->siblings[name] = new state_sibling{ name, ownerstate };
         auto *name_state = states[name];
+        name_state->owner = ownerstate;
         name_state->Begin();
     }
     else 
@@ -112,11 +117,9 @@ void state_manager::Update(int px, int py, int buttons)
         for (const auto& [sname, sibs] : curr_state->siblings) {
             if(states.contains(sibs->name)) {
                 auto *sibling = states.at(sibs->name);
-                if( !sibling->name().empty() ) {
-                    sibling->self  = this;
-                    sibling->dt    = dt;
-                    sibling->Update(px, py, buttons);
-                }
+                sibling->self  = this;
+                sibling->dt    = dt;
+                sibling->Update(px, py, buttons);
             }
         }
 
@@ -139,11 +142,9 @@ void state_manager::Render()
         for (const auto& [sname, sibs] : curr_state->siblings) {
             if(states.contains(sibs->name)) {
                 auto *sibling = states.at(sibs->name);
-                if( !sibling->name().empty() ) {
-                    sibling->self  = this;
-                    sibling->dt    = dt;
-                    sibling->Render();
-                }
+                sibling->self  = this;
+                sibling->dt    = dt;
+                sibling->Render();
             }
         }
 

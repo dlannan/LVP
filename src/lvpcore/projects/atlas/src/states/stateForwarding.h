@@ -1,15 +1,15 @@
 #pragma once
 
-#include "../../common/state/include/state.h"
-#include "../../common/state/include/state_packet.h"
-#include "../../common/state/include/state_stream.h"
+#include "../../../common/state/include/state.h"
+#include "../../../common/state/include/state_packet.h"
+#include "../../../common/state/include/state_stream.h"
 
 #include <cstdint>
 #include <unordered_map>
 
 using state_uid = std::uint64_t;
 
-class stateForwarding : state
+class stateForwarding : public state
 {
 public:
     stateForwarding();

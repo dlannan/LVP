@@ -36,9 +36,11 @@ bool atlas::Init(state_stream& input, state_stream& output)
     m_output = &output;
 
     m_registration.Init(input, output);
+    m_forwarding.Init(input, output);
 
     m_smanager.Init();
-    m_smanager.CreateState("stateRegistration", &m_registration);
+    m_smanager.CreateState("atlas_registration", &m_registration);
+    m_smanager.CreateState("atlas_forwarder", &m_forwarding);
     
     std::cout << "atlas: Init\n";
     return true;
@@ -46,10 +48,11 @@ bool atlas::Init(state_stream& input, state_stream& output)
 
 bool atlas::Begin()
 {
-    m_smanager.ChangeState("stateRegistration");
+    m_smanager.ChangeState("atlas_registration");
+    m_smanager.AddSibling("atlas_forwarder", "atlas_registration");
     return true;
 }
-
+ 
 void atlas::PreUpdate()
 {
     // Reserved for future pre-update processing.

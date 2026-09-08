@@ -209,6 +209,17 @@ class packet_interface::stream final : public state_stream
         return !m_packets.empty();
     }
 
+    bool check(state_packet& packet) override
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (m_packets.empty())
+        {
+            return false;
+        }
+        packet = m_packets.front();
+        return true;
+    }
+
     bool read(state_packet& packet) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);

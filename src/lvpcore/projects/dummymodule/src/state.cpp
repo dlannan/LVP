@@ -86,8 +86,8 @@ int dummy::Update()
 
         for (const auto& metadata : packet.metadata)
         {
-            if (metadata.key == "command" &&
-                metadata.value == RegisteredCommand)
+            std::cout << metadata.key << ":" << metadata.value << "\n";
+            if (metadata.key == "command" && metadata.value == RegisteredCommand)
             {
                 isRegistered = true;
                 break;

@@ -31,7 +31,7 @@ if /I "%CONFIG%"=="Debug" (
 cl %CFLAGS% /c /nologo ^
     /I"%ROOT%include" ^
     "%ROOT%src\state.cpp" ^
-    "%ROOT%src\state_manager.cpp"
+    "%ROOT%src\state_manager.cpp" 
 
 if errorlevel 1 exit /b 1
 
@@ -42,8 +42,7 @@ lib /nologo ^
 
 if errorlevel 1 exit /b 1
 
-del /q state.obj 2>nul
-del /q state_manager.obj 2>nul
+del /q *.obj 2>nul
 
 echo.
 echo Built:
