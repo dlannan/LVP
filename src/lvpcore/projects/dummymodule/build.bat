@@ -50,6 +50,8 @@ cl %CFLAGS% /nologo ^
     /I"..\..\common\include" ^
     /I"%ROOT%src" ^
     "%ROOT%src\state.cpp" ^
+    "%ROOT%src\states\stateRegister.cpp" ^
+    "%ROOT%src\states\stateTestForward.cpp" ^
     "%ROOT%src\main.cpp" ^
     /Fe:"%OUT%\dummymodule.exe" ^
     %LINK%

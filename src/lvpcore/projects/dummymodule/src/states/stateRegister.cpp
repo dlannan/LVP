@@ -1,30 +1,31 @@
-#include "state.h"
+#include "stateRegster.h"
 
+#include <string>
 #include <iostream>
 
 namespace
 {
-    constexpr const char* DummyName = "dummy";
-    constexpr const char* AtlasName = "atlas";
+    constexpr const char* RegistrationTarget = "atlas";
+    constexpr const char* RegistrationCommand = "register";
 
     constexpr const char* RegisteredCommand = "registered";
 }
 
-dummy::dummy( const char * name = DummyName )
+stateRegster::stateRegster()
     : m_input(nullptr)
     , m_output(nullptr)
     , m_uid(0)
     , m_running(false)
     , m_name(name)
 {
-}
 
-dummy::~dummy()
+}
+stateRegster::~stateRegster()
 {
     Finish();
 }
 
-bool dummy::Init( state_stream& input, state_stream& output)
+bool stateRegster::Init(state_stream& input, state_stream& output)  
 {
     m_input = &input;
     m_output = &output;
@@ -33,7 +34,7 @@ bool dummy::Init( state_stream& input, state_stream& output)
     return true;
 }
 
-bool dummy::Begin()
+bool stateRegster::Begin()
 {
     if (m_input == nullptr || m_output == nullptr)
     {
@@ -62,12 +63,12 @@ bool dummy::Begin()
     return true;
 }
 
-void dummy::PreUpdate()
+void stateRegster::PreUpdate()
 {
-    // Reserved for future pre-update processing.
+
 }
 
-int dummy::Update()
+void stateRegster::Update(int px, int py, int buttons)
 {
     if (!m_running || m_input == nullptr)
     {
@@ -125,12 +126,17 @@ int dummy::Update()
     return processed;
 }
 
-void dummy::PostUpdate()
+void stateRegster::Render()
 {
-    // Reserved for future post-update processing.
+
 }
 
-void dummy::Finish()
+void stateRegster::PostUpdate()
+{
+
+}
+
+void stateRegster::Finish()
 {
     if (!m_running)
     {
