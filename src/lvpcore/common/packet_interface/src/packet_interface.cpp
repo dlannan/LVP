@@ -458,7 +458,11 @@ int packet_interface::Update()
         {
             if (!received.packet.envelope.owner.empty())
             {
-                m_transport->endpoints[received.packet.envelope.owner] = received.source;
+                auto is_mapped = m_transport->endpoints.find(received.packet.envelope.owner);
+                if(is_mapped == m_transport->endpoints.end()) {
+                    std::cout << "Mapping: " << received.packet.envelope.owner << "\n";
+                    m_transport->endpoints[received.packet.envelope.owner] = received.source;
+                }
             }
 
             m_readStream->write(received.packet);
@@ -495,6 +499,11 @@ int packet_interface::Update()
                     << "packet_interface: no endpoint for target "
                     << packet.envelope.target
                     << '\n';
+
+                    for (const auto& [key, value] : m_transport->endpoints)
+                    {
+                        std::cout << key << '\n';
+                    }
 
                 continue;
             }

@@ -50,7 +50,6 @@ void stateRegistration::Update(int px, int py, int buttons)
         return;
     }
     int processed = 0;
-    bool do_process = true;
 
     state_packet packet;
 
@@ -58,7 +57,6 @@ void stateRegistration::Update(int px, int py, int buttons)
     {
         ++processed;
 
-        std::cout << "reg Update\n" ;
         std::cout
             << "stateRegistration: received packet"
             << " uid=" << packet.envelope.uid
@@ -81,18 +79,16 @@ void stateRegistration::Update(int px, int py, int buttons)
 
         if (!isRegistration)
         {
-            std::cout << "stateRegistration: ignoring packet\n";
-            do_process = false;
+            // std::cout << "stateRegistration: ignoring packet\n";
+            return;
         }
 
         if (packet.envelope.target != RegistrationTarget)
         {
-            std::cout << "stateRegistration: registration packet has incorrect target\n";
-            do_process = false;
+            std::cout << "stateRegistration: registration packet has incorrect target: " << packet.envelope.target << "\n";
         }
-
-        if(do_process) {
-
+        else
+        {
             m_input->read(packet);
             const state_uid uid = m_nextUid++;
             m_states.emplace(uid, packet.envelope);

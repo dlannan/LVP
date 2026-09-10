@@ -1,21 +1,34 @@
-#include "state.h"
 
+#include "../../common/state/include/state.h"
 #include "../../common/packet_interface/include/packet_interface.h"
+
+#include "../../common/state/include/state.h"
+#include "../../common/state/include/state_packet.h"
+#include "../../common/state/include/state_stream.h"
+#include "../../common/state/include/state_manager.h"
+
+#include "./states/stateRegister.h"
+#include "./states/stateTestForward.h"
 
 #include <cstdint>
 #include <iostream>
 #include <string>
 
+#include <windows.h>
+
+static state_manager   m_smanager;
+
 int main(int argc, char* argv[])
 {
-    if (argc != 3)
+    if (argc != 4)
     {
-        std::cerr << "usage: dummystate <name> <port>\n";
+        std::cerr << "usage: dummystate <name> <port> <target>\n";
         return 1;
     }
 
     std::string nameValue = std::string(argv[1]);
     const int portValue = std::stoi(argv[2]);
+    std::string targetValue = std::string(argv[3]);
 
     if (portValue < 1 || portValue > 65535)
     {
@@ -47,43 +60,40 @@ int main(int argc, char* argv[])
     state_stream& input = pi.readStream();
     state_stream& output = pi.writeStream();
 
-    dummy stateRegister(nameValue.c_str());
+    stateRegister m_register( nameValue, &m_smanager );
+    stateTestForward m_testforward( nameValue, targetValue, &m_smanager );
 
-    if (!stateRegister.Init(input, output))
-    {
-        std::cerr << nameValue << ": Init failed\n";
+    m_register.Init(input, output);
+    m_testforward.Init(input, output);
 
-        pi.Finish();
+    m_smanager.Init();
+    m_smanager.CreateState("dummy_register", &m_register);
+    m_smanager.CreateState("dummy_testforward", &m_testforward);
 
-        return 1;
-    }
+    std::cout << "dummy: Init\n";
 
-    if (!stateRegister.Begin())
-    {
-        std::cerr << nameValue << ": Begin failed\n";
-
-        stateRegister.Finish();
-        pi.Finish();
-
-        return 1;
-    }
-
+    m_smanager.ChangeState("dummy_register");
+    
     std::cout <<  nameValue << ": running...\n";
     bool running = true;
+    uint64_t start = GetTickCount64();
 
-    while (running)
+    while (m_smanager.Run())
     {
+        uint64_t tm = GetTickCount64();
+        m_smanager.SetDelta( ((double)tm - (double)start) * 0.001 );
+        start = tm;
+
         const int packetResult = pi.Update();
 
-        stateRegister.PreUpdate();
+        //m_smanager.PreUpdate();
 
-        const int stateRegisterResult = stateRegister.Update();
+        m_smanager.Update(0, 0, 0);
 
-        stateRegister.PostUpdate();
-
+        //m_smanager.PostUpdate();
     }
 
-    stateRegister.Finish();
+    // m_smanager.Finish();
     pi.Finish();
 
     return 0;

@@ -3,20 +3,21 @@
 #include "../../../common/state/include/state.h"
 #include "../../../common/state/include/state_packet.h"
 #include "../../../common/state/include/state_stream.h"
+#include "../../../common/state/include/state_manager.h"
 
 #include <cstdint>
 #include <unordered_map>
 
 using state_uid = std::uint64_t;
 
-class stateRegster : public state
+class stateRegister : public state
 {
 public:
-    stateRegster();
-    ~stateRegster();
+    stateRegister(std::string name, state_manager *smanager);
+    ~stateRegister();
 
-    stateRegster(const stateRegster&) = delete;
-    stateRegster& operator=(const stateRegster&) = delete;
+    stateRegister(const stateRegister&) = delete;
+    stateRegister& operator=(const stateRegister&) = delete;
 
     bool Init(state_stream& input, state_stream& output) override;
     bool Begin() override;
@@ -28,12 +29,17 @@ public:
 
     void Finish() override;
 
+    // Just used for general state sharing
+    int m_processed = 0;
+    bool m_registered = false;
+
 private:
-    state_stream* m_input;
-    state_stream* m_output;
+    state_manager   *m_smanager;
 
-    std::uint64_t m_uid;
-    std::string m_name;
+    state_stream*   m_input;
+    state_stream*   m_output;
 
-    bool m_running;
+    std::string     m_name;
+
+    bool            m_running;
 };

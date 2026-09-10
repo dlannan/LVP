@@ -56,6 +56,8 @@ public:
     std::string name() { return m_name; }
     void SetName(std::string name) { m_name = name; }
 
+    uint64_t getUid() { return m_uid; }
+
 public:
     std::unordered_map<std::string, state_sibling *> siblings;
     std::string     owner;

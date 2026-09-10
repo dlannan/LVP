@@ -61,9 +61,6 @@ void stateForwarding::Update(int px, int py, int buttons)
     if(m_input->check(packet))
     {
         ++processed;
-        bool do_process = true;
-
-        std::cout << "fwd Update\n" ;
 
         std::cout
             << "stateForwarding: received packet"
@@ -86,35 +83,35 @@ void stateForwarding::Update(int px, int py, int buttons)
         if (!isForwarding)
         {
             // std::cout << "stateForwarding: ignoring packet\n";
-            do_process = false;
+            return;
         }
 
-        if(do_process) {
-            m_input->read(packet);
-            std::cout
-                << "stateForwarding: forward request from "
-                << packet.envelope.owner
-                << " assigned uid="
-                << packet.envelope.uid
-                << '\n';        
+        m_input->read(packet);
+        std::cout
+            << "stateForwarding: forward request from "
+            << packet.envelope.owner
+            << " assigned uid="
+            << packet.envelope.uid
+            << " to "
+            << packet.envelope.target
+            << '\n';        
 
-            state_packet response;
+        state_packet response;
 
-            response.envelope.uid           = packet.envelope.uid;
-            response.envelope.owner         = packet.envelope.owner;
-            response.envelope.target        = packet.envelope.target;
-            response.envelope.memoryScope   = packet.envelope.memoryScope;
+        response.envelope.uid           = packet.envelope.uid;
+        response.envelope.owner         = packet.envelope.owner;
+        response.envelope.target        = packet.envelope.target;
+        response.envelope.memoryScope   = packet.envelope.memoryScope;
 
-            response.metadata.push_back(
-                {
-                    "command",
-                    "forwarded"
-                });
-
-            if (!m_output->write(response))
+        response.metadata.push_back(
             {
-                std::cout << "stateForwarding: failed to queue forwarded response\n";
-            }
+                "command",
+                "forwarded"
+            });
+
+        if (!m_output->write(response))
+        {
+            std::cout << "stateForwarding: failed to queue forwarded response\n";
         }
     }
 }

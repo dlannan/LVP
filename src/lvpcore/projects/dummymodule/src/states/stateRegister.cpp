@@ -1,31 +1,33 @@
-#include "stateRegster.h"
+#include "stateRegister.h"
 
 #include <string>
 #include <iostream>
 
 namespace
 {
+    constexpr const char* AtlasName = "atlas";
+
     constexpr const char* RegistrationTarget = "atlas";
     constexpr const char* RegistrationCommand = "register";
 
     constexpr const char* RegisteredCommand = "registered";
 }
 
-stateRegster::stateRegster()
+stateRegister::stateRegister(std::string name, state_manager *smanager)
     : m_input(nullptr)
     , m_output(nullptr)
-    , m_uid(0)
     , m_running(false)
     , m_name(name)
+    , m_smanager(smanager)
 {
 
 }
-stateRegster::~stateRegster()
+stateRegister::~stateRegister()
 {
     Finish();
 }
 
-bool stateRegster::Init(state_stream& input, state_stream& output)  
+bool stateRegister::Init(state_stream& input, state_stream& output)  
 {
     m_input = &input;
     m_output = &output;
@@ -34,7 +36,7 @@ bool stateRegster::Init(state_stream& input, state_stream& output)
     return true;
 }
 
-bool stateRegster::Begin()
+bool stateRegister::Begin()
 {
     if (m_input == nullptr || m_output == nullptr)
     {
@@ -59,27 +61,26 @@ bool stateRegster::Begin()
 
     std::cout << m_name << ": registration queued\n";
     m_running = true;
+    m_registered = false;
 
     return true;
 }
 
-void stateRegster::PreUpdate()
+void stateRegister::PreUpdate()
 {
 
 }
 
-void stateRegster::Update(int px, int py, int buttons)
+void stateRegister::Update(int px, int py, int buttons)
 {
     if (!m_running || m_input == nullptr)
-    {
-        return 0;
-    }
+        return;
 
     int processed = 0;
 
     state_packet packet;
 
-    while (m_input->read(packet))
+    if(m_input->check(packet))
     {
         ++processed;
 
@@ -98,13 +99,13 @@ void stateRegster::Update(int px, int py, int buttons)
         if (!isRegistered)
         {
             std::cout << m_name << ": ignoring packet\n";
-            continue;
+            return;
         }
 
         if (packet.envelope.target != m_name)
         {
             std::cout << m_name << ": registration response has incorrect target\n";
-            continue;
+            return;
         }
 
         if (m_uid != 0)
@@ -112,31 +113,38 @@ void stateRegster::Update(int px, int py, int buttons)
             std::cout
                 << m_name << ": ignoring registration response; "
                 << "already registered\n";
-            continue;
+            m_registered = true;
         }
+        else
+        {
+            m_input->read(packet);
+            m_uid = packet.envelope.uid;
 
-        m_uid = packet.envelope.uid;
+            std::cout
+                << m_name << ": registered with atlas uid="
+                << m_uid
+                << '\n';
+            m_registered = true;
 
-        std::cout
-            << m_name << ": registered with atlas uid="
-            << m_uid
-            << '\n';
+            m_smanager->ChangeState("dummy_testforward");            
+        }
     }
 
-    return processed;
+    m_processed = processed;
+    return;
 }
 
-void stateRegster::Render()
+void stateRegister::Render()
 {
 
 }
 
-void stateRegster::PostUpdate()
+void stateRegister::PostUpdate()
 {
 
 }
 
-void stateRegster::Finish()
+void stateRegister::Finish()
 {
     if (!m_running)
     {

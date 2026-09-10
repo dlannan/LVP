@@ -50,6 +50,9 @@ public:
     // Special single pass state call -- not fully operational
     void OneShot( state *state, state_callback callback );
 
+    // Set the state manager frame delta (usually before update)
+    void SetDelta( double _dt ) { dt = _dt; }
+
 private:
     // -- Index into the states and statenames being used.
     std::string current		= "";
