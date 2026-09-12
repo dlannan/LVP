@@ -16,6 +16,9 @@ set OUT=%ROOT%bin\%CONFIG%
 
 if not exist "%OUT%" mkdir "%OUT%"
 
+REM This is kinda bad, but I will add some ways to handle this better. Prob move to luamake
+del /q *.obj 2>nul
+
 echo.
 echo ========================================
 echo Building editor.exe - %CONFIG%
