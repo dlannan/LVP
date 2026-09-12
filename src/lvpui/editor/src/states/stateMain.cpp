@@ -101,7 +101,11 @@ void stateMain::Update(int px, int py, int buttons)
         return;
 
     int processed = 0;
-    exampe.Update();
+    int ok = exampe.Update();
+    if(ok == 1) {
+        m_smanager->ExitState();
+        return;
+    }
 
     state_packet packet;
 

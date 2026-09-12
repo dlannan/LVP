@@ -84,6 +84,7 @@ int main(int argc, char* argv[])
         m_smanager.SetDelta( ((double)tm - (double)start) * 0.001 );
         start = tm;
 
+        pi.Wait();
         const int packetResult = pi.Update();
 
         //m_smanager.PreUpdate();

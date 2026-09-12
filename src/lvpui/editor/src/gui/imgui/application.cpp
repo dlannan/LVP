@@ -79,6 +79,10 @@ int Application::Update()
 
         Frame();
     }
+
+    if(!m_Platform->IsValidWindow())
+        return 1;
+
     return 0;
 }
 

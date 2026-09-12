@@ -53,6 +53,7 @@ struct PlatformWin32 final
     void FinishFrame() override;
     void Quit() override;
 
+    bool IsValidWindow() override;
     void SetDpiScale(float dpiScale);
 
     LRESULT WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -254,6 +255,11 @@ void PlatformWin32::FinishFrame()
 void PlatformWin32::Quit()
 {
     PostQuitMessage(0);
+}
+
+bool PlatformWin32::IsValidWindow()
+{ 
+    return IsWindow(m_MainWindowHandle); 
 }
 
 void PlatformWin32::SetDpiScale(float dpiScale)

@@ -4,7 +4,6 @@
 
 #include <cstring>
 #include <iostream>
-#include <mutex>
 #include <queue>
 #include <string>
 #include <unordered_map>
@@ -212,10 +211,8 @@ class packet_interface::stream final : public state_stream
     bool check(state_packet& packet) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (m_packets.empty())
-        {
+        if(m_packets.empty())
             return false;
-        }
         packet = m_packets.front();
         return true;
     }
@@ -224,9 +221,7 @@ class packet_interface::stream final : public state_stream
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_packets.empty())
-        {
             return false;
-        }
         packet = std::move(m_packets.front());
         m_packets.pop();
         return true;
@@ -329,6 +324,8 @@ packet_interface::packet_interface(const packet_interface_config& config)
     , m_readStream(new stream())
     , m_writeStream(new stream())
     , m_transport(new transport())
+    , m_mutex()
+    , m_cv()
 {
     if(config.domain == packet_interface_atlas_domain::local)
         m_transport->setAtlas();
@@ -569,6 +566,15 @@ int packet_interface::Update()
     */
     uv_run( m_transport->loop, UV_RUN_NOWAIT);
     return processed;
+}
+
+void packet_interface::Wait()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_cv.wait(lock, [this] {
+        uv_run(m_transport->loop, UV_RUN_NOWAIT);
+        return !m_readStream->available();
+    });
 }
 
 void packet_interface::Finish()

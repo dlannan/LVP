@@ -19,6 +19,8 @@ struct Platform
     virtual void ShowMainWindow() = 0;
     virtual bool ProcessMainWindowEvents() = 0;
     virtual bool IsMainWindowVisible() const = 0;
+    
+    virtual bool IsValidWindow() = 0;
 
     virtual void SetRenderer(Renderer* renderer) = 0;
 

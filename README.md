@@ -3,6 +3,12 @@ Live Video Production
 
 LVP is a framework to allow video content producers create live video productions in real time using simple node based controls and dynamic timeline control.
 
+## !!Important!!
+
+The initial build for LVP will be Windows only!
+
+I will not support platforms right now, the aim is to get a working version running asap, and cross platform is _not_ a priority.
+
 ## LVP Core
 
 The main components of the framework are:

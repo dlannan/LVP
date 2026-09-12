@@ -58,22 +58,28 @@ cl %CFLAGS% /nologo ^
     /I"..\..\lvpcore\common\include" ^
     /I"%ROOT%src/gui/" ^
     /I"%ROOT%src/gui/imgui" ^
+    /I"%ROOT%src/gui/nodes" ^
     /I"%ROOT%src/gui/imgui/imgui_node_editor" ^
     /I"%ROOT%src" ^
     "%ROOT%..\..\..\external\imgui\imgui.cpp" ^
     "%ROOT%..\..\..\external\imgui\imgui_tables.cpp" ^
     "%ROOT%..\..\..\external\imgui\imgui_widgets.cpp" ^
     "%ROOT%..\..\..\external\imgui\imgui_draw.cpp" ^
+    ^
     "%ROOT%src\gui\imgui\imgui_impl_dx11.cpp" ^
     "%ROOT%src\gui\imgui\imgui_impl_win32.cpp" ^
     "%ROOT%src\gui\imgui\platform_win32.cpp" ^
     "%ROOT%src\gui\imgui\renderer_dx11.cpp" ^
     "%ROOT%src\gui\imgui\application.cpp" ^
+    ^
     "%ROOT%src\gui\imgui\imgui_node_editor\crude_json.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_canvas.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_node_editor.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_node_editor_api.cpp" ^
     "%ROOT%src\gui\imgui_editor.cpp" ^
+    ^
+    "%ROOT%src\gui\nodes\tooltip_and_popup.cpp" ^
+    ^
     "%ROOT%src\states\stateRegister.cpp" ^
     "%ROOT%src\states\stateMain.cpp" ^
     "%ROOT%src\main.cpp" ^
