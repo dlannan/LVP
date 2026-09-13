@@ -79,6 +79,7 @@ cl %CFLAGS% /nologo ^
     "%ROOT%src\gui\imgui_editor.cpp" ^
     ^
     "%ROOT%src\gui\nodes\tooltip_and_popup.cpp" ^
+    "%ROOT%src\gui\nodes\headers_and_tree.cpp" ^
     ^
     "%ROOT%src\states\stateRegister.cpp" ^
     "%ROOT%src\states\stateMain.cpp" ^
