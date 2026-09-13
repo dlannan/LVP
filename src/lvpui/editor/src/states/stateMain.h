@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <unordered_map>
 
+#include "imgui_editor.h"
+
 using state_uid = std::uint64_t;
 
 class stateMain : public state
@@ -48,4 +50,6 @@ private:
     std::string m_name;
 
     bool m_running;
+
+    struct Example imgui_editor;
 };

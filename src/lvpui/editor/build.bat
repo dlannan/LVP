@@ -26,9 +26,9 @@ echo ========================================
 echo.
 
 if /I "%CONFIG%"=="Debug" (
-    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi /D_CONSOLE
+    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi /D_CONSOLE /wd4100 /wd4505
 ) else (
-    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2 /D_CONSOLE
+    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2 /D_CONSOLE /wd4100 /wd4505
 )
 
 if /I "%CONFIG%"=="Debug" (
@@ -78,8 +78,11 @@ cl %CFLAGS% /nologo ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_node_editor_api.cpp" ^
     "%ROOT%src\gui\imgui_editor.cpp" ^
     ^
+    "%ROOT%src\gui\nodes\simple.cpp" ^
+    "%ROOT%src\gui\nodes\widgets.cpp" ^
     "%ROOT%src\gui\nodes\tooltip_and_popup.cpp" ^
     "%ROOT%src\gui\nodes\headers_and_tree.cpp" ^
+    "%ROOT%src\gui\nodes\plot_widget.cpp" ^
     ^
     "%ROOT%src\states\stateRegister.cpp" ^
     "%ROOT%src\states\stateMain.cpp" ^

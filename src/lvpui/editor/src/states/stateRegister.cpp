@@ -108,26 +108,15 @@ void stateRegister::Update(int px, int py, int buttons)
             return;
         }
 
-        if (m_uid != 0)
-        {
-            std::cout
-                << m_name << ": ignoring registration response; "
-                << "already registered\n";
-            m_registered = true;
-        }
-        else
-        {
-            m_input->read(packet);
-            m_uid = packet.envelope.uid;
+        m_input->read(packet);
+        m_uid = packet.envelope.uid;
 
-            std::cout
-                << m_name << ": registered with atlas uid="
-                << m_uid
-                << '\n';
-            m_registered = true;
-
-            m_smanager->ChangeState("editor_main");            
-        }
+        std::cout
+            << m_name << ": registered with atlas uid="
+            << m_uid
+            << '\n';
+        m_registered = true;
+        m_smanager->ChangeState("editor_main");            
     }
 
     m_processed = processed;

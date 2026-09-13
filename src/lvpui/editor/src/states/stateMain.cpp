@@ -5,8 +5,6 @@
 
 #include <vector>
 
-#include "imgui_editor.h"
-
 // TestForward
 //  What it is: Its simply a process that can be used to test forwarding a packet from 
 //              one named process to another through atlas.
@@ -18,8 +16,6 @@
 //  The result of running two test forward processes targeting each other should be a 1 sec 
 //    packet loop between the two. 
 //  Adding a third, then one process will recieve two forwarded packets per second and so on.
-
-static struct Example  exampe("LVP Editor");
 
 namespace
 {
@@ -37,6 +33,7 @@ stateMain::stateMain(std::string name, std::string target, state_manager *smanag
     , m_name(name)
     , m_target(target)
     , m_smanager(smanager)
+    , imgui_editor("LVP Editor")
 {
 
 }
@@ -65,7 +62,7 @@ bool stateMain::Begin()
     m_running = true;
     m_lasttime = dt;
 
-    exampe.Create();
+    imgui_editor.Create();
     return true;
 }
 
@@ -101,7 +98,7 @@ void stateMain::Update(int px, int py, int buttons)
         return;
 
     int processed = 0;
-    int ok = exampe.Update();
+    int ok = imgui_editor.Update();
     if(ok == 1) {
         m_smanager->ExitState();
         return;
@@ -162,7 +159,7 @@ void stateMain::PostUpdate()
 
 void stateMain::Finish()
 {
-    exampe.Close();
+    imgui_editor.Close();
     if (!m_running)
     {
         return;

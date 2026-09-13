@@ -8,6 +8,7 @@ struct Renderer;
 
 struct Application
 {
+public:
     Application(const char* name);
     Application(const char* name, int argc, char** argv);
     ~Application();
