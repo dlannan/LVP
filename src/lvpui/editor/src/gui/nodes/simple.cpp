@@ -30,7 +30,7 @@ void SimpleNode(bool firstframe, int &uniqueId)
             ImGui::Text("-> In");
         ed::EndPin();
         ImGui::SameLine();
-        ImGui::Dummy(ImVec2(test_tex_width - 90, 0)); // Hacky magic number to space out the output pin.
+        ImGui::Dummy(ImVec2((float)(test_tex_width - 90), 0)); // Hacky magic number to space out the output pin.
         ImGui::SameLine();
         ed::BeginPin(uniqueId++, ed::PinKind::Output);
             ImGui::Text("Out ->");
@@ -38,6 +38,6 @@ void SimpleNode(bool firstframe, int &uniqueId)
 
         ImGui::Text("pointer = %p", test_tex);
         ImGui::Text("size = %d x %d", test_tex_width, test_tex_height);
-        ImGui::Image((ImTextureID)(intptr_t)test_tex, ImVec2(test_tex_width, test_tex_height));
+        ImGui::Image((ImTextureID)(intptr_t)test_tex, ImVec2((float)test_tex_width, (float)test_tex_height));
     ed::EndNode();
 }

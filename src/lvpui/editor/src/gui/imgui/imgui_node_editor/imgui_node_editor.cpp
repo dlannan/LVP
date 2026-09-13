@@ -39,10 +39,10 @@
 namespace {
     void FloorRect(ImRect & rect)
     {
-        rect.Min.x = int(rect.Min.x);
-        rect.Min.y = int(rect.Min.y);
-        rect.Max.x = int(rect.Max.x);
-        rect.Max.y = int(rect.Max.y);
+        rect.Min.x = (rect.Min.x);
+        rect.Min.y = (rect.Min.y);
+        rect.Max.x = (rect.Max.x);
+        rect.Max.y = (rect.Max.y);
     }
 }
 //namespace ImGui {

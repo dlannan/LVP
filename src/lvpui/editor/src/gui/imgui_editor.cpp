@@ -19,10 +19,8 @@
 
 #include "imgui_editor.h"
 
-#include "simple.h"
+#include "input_video.h"
 #include "widgets.h"
-#include "tooltip_and_popup.h"
-#include "headers_and_tree.h"
 #include "plot_widget.h"
 
 # ifdef _MSC_VER
@@ -39,7 +37,7 @@ void Example::OnStart()
     ed::Config config;
     config.SettingsFile = "Widgets.json";
     m_Context = ed::CreateEditor(&config);
-    SimpleNodeInit((Application &)*this);
+    InputVideoInit((Application &)*this);
 }
 
 void Example::OnStop()  
@@ -61,10 +59,8 @@ void Example::OnFrame(float deltaTime)
     ed::Begin("My Editor", ImVec2(0.0, 0.0f));
         int uniqueId = 1;
 
-        SimpleNode(firstframe, uniqueId);
+        InputVideo(firstframe, uniqueId);
         Widgets(firstframe, uniqueId);
-        HeadersAndTree(firstframe, uniqueId);
-        ToolTipAndPopup(firstframe, uniqueId);
         PlotWidget(firstframe, uniqueId);
 
         // ==================================================================================================
