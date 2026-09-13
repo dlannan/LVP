@@ -69,4 +69,3 @@ echo   %OUT%\atlas.exe
 echo.
 
 endlocal
-exit

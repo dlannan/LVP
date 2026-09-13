@@ -65,4 +65,4 @@ echo   %OUT%\dummymodule.exe
 echo.
 
 endlocal
-exit
+
