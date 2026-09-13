@@ -81,3 +81,8 @@ _ReSharper*/
 
 *.dSYM/
 .cache/
+
+!libuv.lib
+!uv.lib
+!uv.dll 
+
