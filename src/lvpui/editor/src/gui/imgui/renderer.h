@@ -24,6 +24,9 @@ struct Renderer
     virtual void Resize(int width, int height) = 0;
 
     virtual ImTextureID CreateTexture(const void* data, int width, int height) = 0;
+    virtual ImTextureID CreateDynamicTexture(const void* data, int width, int height) = 0;
+    virtual bool        UpdateTexture(ImTextureID texture, const void *data) = 0;
+    virtual bool        UpdateDynamicTexture(ImTextureID texture, const void *data) = 0;
     virtual void        DestroyTexture(ImTextureID texture) = 0;
     virtual int         GetTextureWidth(ImTextureID texture) = 0;
     virtual int         GetTextureHeight(ImTextureID texture) = 0;

@@ -7,4 +7,4 @@
 
 namespace ed = ax::NodeEditor;
 
-void PlotWidget(bool firstframe, int &uniqueId);
+void PlotWidget(bool firstframe, int &uniqueId, ImVector<LinkInfo>& mLinks);

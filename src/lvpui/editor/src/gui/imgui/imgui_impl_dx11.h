@@ -24,6 +24,9 @@ IMGUI_IMPL_API bool     ImGui_ImplDX11_CreateDeviceObjects();
 
 IMGUI_IMPL_API ImTextureID ImGui_LoadTexture(const char* path);
 IMGUI_IMPL_API ImTextureID ImGui_CreateTexture(const void* data, int width, int height);
+IMGUI_IMPL_API ImTextureID ImGui_CreateDynamicTexture(const void* data, int width, int height);
+IMGUI_IMPL_API bool        ImGui_UpdateTexture(ImTextureID texture, const void *data);
+IMGUI_IMPL_API bool        ImGui_UpdateDynamicTexture(ImTextureID texture, const void *data);
 IMGUI_IMPL_API void        ImGui_DestroyTexture(ImTextureID texture);
 IMGUI_IMPL_API int         ImGui_GetTextureWidth(ImTextureID texture);
 IMGUI_IMPL_API int         ImGui_GetTextureHeight(ImTextureID texture);

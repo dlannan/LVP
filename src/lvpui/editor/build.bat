@@ -76,6 +76,8 @@ cl %CFLAGS% /nologo ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_canvas.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_node_editor.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_node_editor_api.cpp" ^
+    ^
+    "%ROOT%src\gui\imgui_node_links.cpp" ^
     "%ROOT%src\gui\imgui_editor.cpp" ^
     ^
     "%ROOT%src\gui\nodes\input_video.cpp" ^

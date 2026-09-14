@@ -28,6 +28,9 @@ struct RendererDX11 final
     void Resize(int width, int height) override;
 
     ImTextureID CreateTexture(const void* data, int width, int height) override;
+    ImTextureID CreateDynamicTexture(const void* data, int width, int height) override;
+    bool        UpdateTexture(ImTextureID texture, const void *data) override;
+    bool        UpdateDynamicTexture(ImTextureID texture, const void *data) override;
     void        DestroyTexture(ImTextureID texture) override;
     int         GetTextureWidth(ImTextureID texture) override;
     int         GetTextureHeight(ImTextureID texture) override;
@@ -172,9 +175,24 @@ void RendererDX11::CleanupRenderTarget()
     if (m_mainRenderTargetView) { m_mainRenderTargetView->Release(); m_mainRenderTargetView = nullptr; }
 }
 
+bool RendererDX11::UpdateTexture(ImTextureID texture, const void *data)
+{
+    return ImGui_UpdateTexture(texture, data);
+}
+
+bool RendererDX11::UpdateDynamicTexture(ImTextureID texture, const void *data)
+{
+    return ImGui_UpdateDynamicTexture(texture, data);
+}
+
 ImTextureID RendererDX11::CreateTexture(const void* data, int width, int height)
 {
     return ImGui_CreateTexture(data, width, height);
+}
+
+ImTextureID RendererDX11::CreateDynamicTexture(const void* data, int width, int height)
+{
+    return ImGui_CreateDynamicTexture(data, width, height);
 }
 
 void RendererDX11::DestroyTexture(ImTextureID texture)

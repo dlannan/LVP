@@ -63,6 +63,7 @@ bool Application::Create(int width /*= -1*/, int height /*= -1*/)
 
     OnStart();
 
+    PreFrame(io.DeltaTime);
     Frame();
 
     m_Platform->ShowMainWindow();
@@ -143,6 +144,8 @@ void Application::Frame()
 
     m_Renderer->NewFrame();
 
+    PreFrame(io.DeltaTime);
+
     ImGui::NewFrame();
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -213,9 +216,37 @@ ImTextureID Application::LoadTexture(const char* path)
         return nullptr;
 }
 
+ImTextureID Application::LoadDynamicTexture(const char* path)
+{
+    int width = 0, height = 0, component = 0;
+    if (auto data = stbi_load(path, &width, &height, &component, 4))
+    {
+        auto texture = CreateDynamicTexture(data, width, height);
+        stbi_image_free(data);
+        return texture;
+    }
+    else
+        return nullptr;
+}
+
+bool Application::UpdateTexture(ImTextureID tex_id, const void* data)
+{
+    return m_Renderer->UpdateTexture(tex_id, data);
+}
+
+bool Application::UpdateDynamicTexture(ImTextureID tex_id, const void* data)
+{
+    return m_Renderer->UpdateDynamicTexture(tex_id, data);
+}
+
 ImTextureID Application::CreateTexture(const void* data, int width, int height)
 {
     return m_Renderer->CreateTexture(data, width, height);
+}
+
+ImTextureID Application::CreateDynamicTexture(const void* data, int width, int height)
+{
+    return m_Renderer->CreateDynamicTexture(data, width, height);
 }
 
 void Application::DestroyTexture(ImTextureID texture)

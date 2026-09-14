@@ -1,5 +1,7 @@
 
 
+#include "imgui_node_links.h"
+
 #include "tooltip_and_popup.h"
 
 # ifdef _MSC_VER
@@ -11,17 +13,19 @@
 # endif
 
 
-void PlotWidget(bool firstframe, int &uniqueId)
+void PlotWidget(bool firstframe, int &uniqueId, ImVector<LinkInfo> &links)
 {
     // Plot Widgets =========================================================================================
     // Note: most of these plots can't be used in nodes missing, because they spawn tooltips automatically,
     // so we can't trap them in our deferred pop-up mechanism.  This causes them to fly into a random screen
     // location.
     auto plot_id = uniqueId++;
+    bool inputLinked = false;
     ed::BeginNode(plot_id);
         ImGui::Text("Plot Demo");
         ed::BeginPin(uniqueId++, ed::PinKind::Input);
             ImGui::Text("-> In");
+            inputLinked = IsPinLinked(uniqueId-1, links);
         ed::EndPin();
         ImGui::SameLine();
         ImGui::Dummy(ImVec2(250, 0)); // Hacky magic number to space out the output pin.
@@ -34,7 +38,7 @@ void PlotWidget(bool firstframe, int &uniqueId)
 
         // Animate a simple progress bar
         static float progress = 0.0f, progress_dir = 1.0f;
-        progress += progress_dir * 0.4f * ImGui::GetIO().DeltaTime;
+        if(inputLinked) progress += progress_dir * 0.4f * ImGui::GetIO().DeltaTime;
         if (progress >= +1.1f) { progress = +1.1f; progress_dir *= -1.0f; }
         if (progress <= -0.1f) { progress = -0.1f; progress_dir *= -1.0f; }
 
@@ -51,6 +55,7 @@ void PlotWidget(bool firstframe, int &uniqueId)
         ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
 
         ImGui::PopItemWidth();
+
     ed::EndNode();
     if (firstframe) {
         ed::SetNodePosition(plot_id, ImVec2(850, 20));

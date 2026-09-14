@@ -26,6 +26,9 @@
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
 
+#include <string>
+#include <iostream>
+
 // DirectX
 struct IUnknown;
 #include <stdio.h>
@@ -66,20 +69,28 @@ struct TEXTURE
 {
     TEXTURE()
     {
+        Texture = NULL;
         View = NULL;
         Width = 0;
         Height = 0;
     }
 
+    ID3D11Texture2D*            Texture;
     ID3D11ShaderResourceView*   View;
     int                         Width;
     int                         Height;
     ImVector<unsigned char>     Data;
 };
 
+
+
 // Forward Declarations
 static bool ImGui_UploadTexture(TEXTURE* texture);
+static bool ImGui_UploadDynamicTexture(TEXTURE* texture);
 static void ImGui_ReleaseTexture(TEXTURE* texture);
+
+bool ImGui_UpdateDynamicTexture(ImTextureID texture, const void *data);
+bool ImGui_UpdateTexture(ImTextureID texture, const void *data);
 
 static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceContext* ctx)
 {
@@ -556,6 +567,17 @@ extern "C" {
 #include "stb_image.h"
 }
 
+void LogTexture(const char *func, TEXTURE *texture)
+{
+    printf(
+        "[%s] TEXTURE object=%p D3D texture=%p View=%p\n",
+        func,
+        texture,
+        texture->Texture,
+        texture->View
+    );
+}
+
 ImTextureID ImGui_LoadTexture(const char* path)
 {
     int width = 0, height = 0, component = 0;
@@ -583,8 +605,29 @@ ImTextureID ImGui_CreateTexture(const void* data, int width, int height)
         return nullptr;
     }
 
+    LogTexture("ImGui_CreateTexture", texture);
     g_Textures.push_back(texture);
 
+    return (ImTextureID)texture;
+}
+
+ImTextureID ImGui_CreateDynamicTexture(const void* data, int width, int height)
+{
+    auto texture = IM_NEW(TEXTURE);
+    texture->Width = width;
+    texture->Height = height;
+    texture->Data.resize(width * height * 4);
+    memcpy(texture->Data.Data, data, texture->Data.Size);
+
+    if (!ImGui_UploadDynamicTexture(texture))
+    {
+        IM_DELETE(texture);
+        return nullptr;
+    }
+
+    LogTexture("ImGui_CreateDynamicTexture", texture);
+    g_Textures.push_back(texture);
+     
     return (ImTextureID)texture;
 }
 
@@ -609,7 +652,7 @@ void ImGui_DestroyTexture(ImTextureID texture)
     IM_DELETE(texture_object);
 }
 
-static bool ImGui_UploadTexture(TEXTURE* texture)
+bool ImGui_UploadTexture(TEXTURE *texture)
 {
     if (!g_pd3dDevice || !texture)
         return false;
@@ -626,28 +669,154 @@ static bool ImGui_UploadTexture(TEXTURE* texture)
     desc.SampleDesc.Count   = 1;
     desc.Usage              = D3D11_USAGE_DEFAULT;
     desc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
-    desc.CPUAccessFlags     = 0;
 
     D3D11_SUBRESOURCE_DATA subResource = {};
-    subResource.pSysMem          = texture->Data.Data;
-    subResource.SysMemPitch      = desc.Width * 4;
-    subResource.SysMemSlicePitch = 0;
+    subResource.pSysMem      = texture->Data.Data;
+    subResource.SysMemPitch  = texture->Width * 4;
 
-    ID3D11Texture2D *pTexture = nullptr;
-    g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+    HRESULT hr = g_pd3dDevice->CreateTexture2D(
+        &desc,
+        &subResource,
+        &texture->Texture
+    );
 
-    if (!pTexture)
+    if (FAILED(hr))
         return false;
 
-    // Create texture view
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
     srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels       = desc.MipLevels;
+    srvDesc.Texture2D.MipLevels       = 1;
     srvDesc.Texture2D.MostDetailedMip = 0;
 
-    g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &texture->View);
-    pTexture->Release();
+    hr = g_pd3dDevice->CreateShaderResourceView(
+        texture->Texture,
+        &srvDesc,
+        &texture->View
+    );
+
+    if (FAILED(hr))
+    {
+        texture->Texture->Release();
+        texture->Texture = nullptr;
+        return false;
+    }
+
+    return true;
+}
+
+bool ImGui_UploadDynamicTexture(TEXTURE* texture)
+{
+    if (!g_pd3dDevice || !texture)
+        return false;
+
+    if (texture->View && texture->Texture)
+        return true;
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width              = texture->Width;
+    desc.Height             = texture->Height;
+    desc.MipLevels          = 1;
+    desc.ArraySize          = 1;
+    desc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.SampleDesc.Count   = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage              = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags     = D3D11_CPU_ACCESS_WRITE;
+
+    // D3D11_SUBRESOURCE_DATA srd = {};
+    // srd.pSysMem          = texture->Data.Data;
+    // srd.SysMemPitch      = texture->Width * 4;
+    // srd.SysMemSlicePitch = texture->Width * texture->Height * 4;
+
+    HRESULT hr = g_pd3dDevice->CreateTexture2D(
+        &desc,
+        nullptr,
+        &texture->Texture
+    );
+
+    if (FAILED(hr)) {
+        std::cout << "[ImGui_UploadDynamicTexture] Failed to create dynamic texture.\n";
+        return false;
+    }
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
+    srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels       = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+
+    hr = g_pd3dDevice->CreateShaderResourceView(
+        texture->Texture,
+        &srvDesc,
+        &texture->View
+    );
+
+    if (FAILED(hr))
+    {
+        std::cout << "[ImGui_UploadDynamicTexture] Failed to create texture view.\n";
+        texture->Texture->Release();
+        texture->Texture = nullptr;
+        return false;
+    }
+
+    return ImGui_UpdateDynamicTexture((ImTextureID)texture, nullptr);
+}
+
+bool ImGui_UpdateDynamicTexture(ImTextureID tex_id, const void *data = nullptr)
+{
+    TEXTURE* texture = (TEXTURE*)(tex_id);   
+    if (!g_pd3dDeviceContext || !texture || !texture->Texture) {
+        printf("[ImGui_UpdateDynamicTexture] Invalid texture\n");
+        return false;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mapped = {};
+    HRESULT hr = g_pd3dDeviceContext->Map(
+        texture->Texture,
+        0,
+        D3D11_MAP_WRITE_DISCARD,
+        0,
+        &mapped
+    );
+
+    if (FAILED(hr))
+    {
+        printf("[ImGui_UpdateDynamicTexture] Map() failed: HRESULT = 0x%08X\n", (unsigned)hr);
+        return false;
+    }
+
+    const size_t rowBytes = (size_t)texture->Width * 4;
+    const unsigned char *srcdata = (data == nullptr)? texture->Data.Data: (const unsigned char *)data;
+    for (int y = 0; y < texture->Height; ++y)
+    {
+        memcpy(
+            (unsigned char*)mapped.pData + y * mapped.RowPitch,
+            srcdata + y * rowBytes,
+            rowBytes
+        );
+    }
+
+    g_pd3dDeviceContext->Unmap(texture->Texture, 0);
+
+    return true;
+}
+
+bool ImGui_UpdateTexture(ImTextureID tex_id, const void *data = nullptr)
+{
+    TEXTURE* texture = (TEXTURE*)(tex_id);
+    if (!g_pd3dDeviceContext || !texture || !texture->Texture)
+        return false;
+
+    g_pd3dDeviceContext->UpdateSubresource(
+        texture->Texture,
+        0,
+        nullptr,
+        (data == nullptr)? texture->Data.Data: data,
+        texture->Width * 4,
+        0
+    );
 
     return true;
 }

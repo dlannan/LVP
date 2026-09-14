@@ -45,6 +45,20 @@ void Example::OnStop()
     ed::DestroyEditor(m_Context);
 }
 
+float elapsed = 0.0f;
+float target_fps = 1.0f / 60.0f;
+
+void Example::PreFrame(float deltaTime)  
+{
+    elapsed += ImGui::GetIO().DeltaTime;
+    if (elapsed >= target_fps)
+    {
+        UpdateVideo();
+        // Do something after 1 second.
+        elapsed -= target_fps;
+    }    
+}
+
 void Example::OnFrame(float deltaTime)  
 {
     static bool firstframe = true; // Used to position the nodes on startup
@@ -59,9 +73,9 @@ void Example::OnFrame(float deltaTime)
     ed::Begin("My Editor", ImVec2(0.0, 0.0f));
         int uniqueId = 1;
 
-        InputVideo(firstframe, uniqueId);
+        InputVideo(firstframe, uniqueId, m_Links);
         Widgets(firstframe, uniqueId);
-        PlotWidget(firstframe, uniqueId);
+        PlotWidget(firstframe, uniqueId, m_Links);
 
         // ==================================================================================================
         // Link Drawing Section

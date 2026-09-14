@@ -28,13 +28,18 @@ public:
     ImFont* HeaderFont() const;
 
     ImTextureID LoadTexture(const char* path);
+    ImTextureID LoadDynamicTexture(const char* path);
     ImTextureID CreateTexture(const void* data, int width, int height);
+    ImTextureID CreateDynamicTexture(const void* data, int width, int height);
+    bool        UpdateTexture(ImTextureID text_id, const void* data);
+    bool        UpdateDynamicTexture(ImTextureID text_id, const void* data);
     void        DestroyTexture(ImTextureID texture);
     int         GetTextureWidth(ImTextureID texture);
     int         GetTextureHeight(ImTextureID texture);
 
     virtual void OnStart() {}
     virtual void OnStop() {}
+    virtual void PreFrame(float deltaTime) {}
     virtual void OnFrame(float deltaTime) {}
 
     virtual ImGuiWindowFlags GetWindowFlags() const;

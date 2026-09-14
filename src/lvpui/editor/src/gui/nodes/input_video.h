@@ -8,4 +8,5 @@
 namespace ed = ax::NodeEditor;
 
 void InputVideoInit(Application &app);
-void InputVideo(bool firstframe, int &uniqueId);
+void InputVideo(bool firstframe, int &uniqueId, ImVector<LinkInfo> &links);
+void UpdateVideo();
