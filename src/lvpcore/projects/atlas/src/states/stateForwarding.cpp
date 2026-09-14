@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 
+#include <windows.h>
+
 namespace
 {
     constexpr const char* ForwardingCommand = "forward";
@@ -113,6 +115,11 @@ void stateForwarding::Update(int px, int py, int buttons)
         {
             std::cout << "stateForwarding: failed to queue forwarded response\n";
         }
+    }
+    else
+    {
+        // TODO: This works, but I dont really like it.
+        Sleep(1);
     }
 }
 

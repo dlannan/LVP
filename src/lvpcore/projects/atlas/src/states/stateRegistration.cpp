@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 
+#include <windows.h>
+
 namespace
 {
     constexpr const char* RegistrationTarget = "atlas";
@@ -118,6 +120,11 @@ void stateRegistration::Update(int px, int py, int buttons)
                 std::cout << "stateRegistration: failed to queue registration response\n";
             }
         }
+    }
+    else
+    {
+        // TODO: This works, but I dont really like it.
+        Sleep(1);
     }
 
     m_processed = processed;

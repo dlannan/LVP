@@ -56,9 +56,7 @@ int main()
         const int packetStatus = pi.Update();
 
         master.PreUpdate();
-
         master.Update();
-
         master.PostUpdate();
     }
 

@@ -208,6 +208,14 @@ class packet_interface::stream final : public state_stream
         return !m_packets.empty();
     }
 
+    void packet_interface::wait()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cv.wait(lock, [this] {
+            return !m_packets.empty();
+        });
+    }
+
     bool check(state_packet& packet) override
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -241,6 +249,7 @@ class packet_interface::stream final : public state_stream
 
     private:
     mutable std::mutex m_mutex;
+    std::condition_variable m_cv;
     std::queue<state_packet> m_packets;
 };
 
@@ -566,15 +575,6 @@ int packet_interface::Update()
     */
     uv_run( m_transport->loop, UV_RUN_NOWAIT);
     return processed;
-}
-
-void packet_interface::Wait()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_cv.wait(lock, [this] {
-        uv_run(m_transport->loop, UV_RUN_NOWAIT);
-        return !m_readStream->available();
-    });
 }
 
 void packet_interface::Finish()

@@ -46,11 +46,8 @@ class packet_interface
 
     void Finish();
 
-    void Wait();
-
     state_stream& readStream();
     state_stream& writeStream();
-
 
 private:
     class stream;
@@ -62,7 +59,4 @@ private:
     stream* m_writeStream;
 
     transport* m_transport;
-
-    mutable std::mutex m_mutex;
-    std::condition_variable m_cv;
 };

@@ -23,9 +23,9 @@ echo ========================================
 echo.
 
 if /I "%CONFIG%"=="Debug" (
-    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi
+    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi /wd4100
 ) else (
-    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2
+    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2 /wd4100
 )
 
 if /I "%CONFIG%"=="Debug" (

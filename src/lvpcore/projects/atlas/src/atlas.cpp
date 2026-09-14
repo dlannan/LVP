@@ -16,8 +16,6 @@
 //      2. Listens to routing commands and forwards streams to the correct process handles.
 //      3. Listens to Zeus for command and control operations.
 
-
-
 atlas::atlas()
     : m_input(nullptr)
     , m_output(nullptr)
