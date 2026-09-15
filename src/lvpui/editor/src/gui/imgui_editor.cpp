@@ -19,6 +19,10 @@
 
 #include "imgui_editor.h"
 
+#include "input_video.h"
+#include "widgets.h"
+#include "plot_widget.h"
+
 # ifdef _MSC_VER
 # define portable_strcpy    strcpy_s
 # define portable_sprintf   sprintf_s
@@ -27,20 +31,19 @@
 # define portable_sprintf   sprintf
 # endif
 
-
 void Example::OnStart() 
 {
     ed::Config config;
     config.SettingsFile = "Widgets.json";
     m_Context = ed::CreateEditor(&config);
-    m_InputVideo = new InputVideo((Application &)*this, m_Links);
-    m_InputVideo->Init();
 
-    m_Widgets = new Widgets((Application &)*this, m_Links);
-    m_Widgets->Init();
+    m_nodes["input_video"] = new InputVideo((Application &)*this, m_Links);
+    m_nodes["widgets"] = new Widgets((Application &)*this, m_Links);
+    m_nodes["plot_widget"] = new PlotWidget((Application &)*this, m_Links);
 
-    m_PlotWidget = new PlotWidget((Application &)*this, m_Links);
-    m_PlotWidget->Init();
+    for( const auto& [name, node]: m_nodes) {
+        node->Init();
+    }
 }
 
 void Example::OnStop()  
@@ -56,7 +59,9 @@ void Example::PreFrame(float deltaTime)
     elapsed += ImGui::GetIO().DeltaTime;
     if (elapsed >= target_fps)
     {
-        m_InputVideo->PreUpdate();
+        for( const auto& [name, node]: m_nodes) {
+            node->PreUpdate();
+        }       
         // Do something after 1 second.
         elapsed -= target_fps;
     }    
@@ -76,9 +81,9 @@ void Example::OnFrame(float deltaTime)
     ed::Begin("My Editor", ImVec2(0.0, 0.0f));
         int uniqueId = 1;
 
-        m_InputVideo->Update(firstframe, uniqueId);
-        m_Widgets->Update(firstframe, uniqueId);
-        m_PlotWidget->Update(firstframe, uniqueId);
+        for( const auto& [name, node]: m_nodes) {
+            node->Update(firstframe, uniqueId);
+        }
 
         // ==================================================================================================
         // Link Drawing Section
