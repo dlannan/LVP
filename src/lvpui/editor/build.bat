@@ -4,6 +4,7 @@ setlocal
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
 set TARGET=lvp_editor.exe
+set RUNDIR=..\..\..
 
 set CONFIG=%~1
 if "%CONFIG%"=="" set CONFIG=Release
@@ -17,9 +18,16 @@ if /I not "%CONFIG%"=="Debug" if /I not "%CONFIG%"=="Release" (
 )
 
 set ROOT=%~dp0
-set OUT=%ROOT%bin\%CONFIG%
-
+set OUT=%ROOT%%RUNDIR%\bin\apps\%CONFIG%
 if not exist "%OUT%" mkdir "%OUT%"
+
+if /I "%CLEAN%"=="Run" (
+    pushd %ROOT%%RUNDIR%
+    .\bin\apps\%CONFIG%\%TARGET% editor 42001 dummy
+    popd
+    exit /b 2
+)
+
 if not exist "obj" mkdir "obj"
 
 if /I "%CLEAN%"=="Clean" (

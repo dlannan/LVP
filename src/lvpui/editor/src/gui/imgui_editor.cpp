@@ -19,10 +19,6 @@
 
 #include "imgui_editor.h"
 
-#include "input_video.h"
-#include "widgets.h"
-#include "plot_widget.h"
-
 # ifdef _MSC_VER
 # define portable_strcpy    strcpy_s
 # define portable_sprintf   sprintf_s
@@ -37,7 +33,14 @@ void Example::OnStart()
     ed::Config config;
     config.SettingsFile = "Widgets.json";
     m_Context = ed::CreateEditor(&config);
-    InputVideoInit((Application &)*this);
+    m_InputVideo = new InputVideo((Application &)*this, m_Links);
+    m_InputVideo->Init();
+
+    m_Widgets = new Widgets((Application &)*this, m_Links);
+    m_Widgets->Init();
+
+    m_PlotWidget = new PlotWidget((Application &)*this, m_Links);
+    m_PlotWidget->Init();
 }
 
 void Example::OnStop()  
@@ -53,7 +56,7 @@ void Example::PreFrame(float deltaTime)
     elapsed += ImGui::GetIO().DeltaTime;
     if (elapsed >= target_fps)
     {
-        UpdateVideo();
+        m_InputVideo->PreUpdate();
         // Do something after 1 second.
         elapsed -= target_fps;
     }    
@@ -73,9 +76,9 @@ void Example::OnFrame(float deltaTime)
     ed::Begin("My Editor", ImVec2(0.0, 0.0f));
         int uniqueId = 1;
 
-        InputVideo(firstframe, uniqueId, m_Links);
-        Widgets(firstframe, uniqueId);
-        PlotWidget(firstframe, uniqueId, m_Links);
+        m_InputVideo->Update(firstframe, uniqueId);
+        m_Widgets->Update(firstframe, uniqueId);
+        m_PlotWidget->Update(firstframe, uniqueId);
 
         // ==================================================================================================
         // Link Drawing Section

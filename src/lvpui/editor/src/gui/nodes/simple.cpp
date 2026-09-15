@@ -10,24 +10,22 @@
 # define portable_sprintf   sprintf
 # endif
 
-static ImTextureID test_tex;
-static int test_tex_width = 0;
-static int test_tex_height = 0;
 
-void SimpleNodeInit(Application &app)
+void Simple::Init()
 {
     test_tex = app.LoadTexture("data\\MyImage01.jpg");
     test_tex_width = app.GetTextureWidth(test_tex);
     test_tex_height = app.GetTextureHeight(test_tex);
 }
 
-void SimpleNode(bool firstframe, int &uniqueId)
+void Simple::Update(bool firstframe, int &uniqueId)
 {
     // Start drawing nodes.
     ed::BeginNode(uniqueId++);
         ImGui::Text("Node A");
         ed::BeginPin(uniqueId++, ed::PinKind::Input);
             ImGui::Text("-> In");
+            inputLinked = IsPinLinked(uniqueId-1, m_links);
         ed::EndPin();
         ImGui::SameLine();
         ImGui::Dummy(ImVec2((float)(test_tex_width - 90), 0)); // Hacky magic number to space out the output pin.

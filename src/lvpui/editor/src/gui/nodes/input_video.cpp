@@ -15,22 +15,6 @@
 #include <string>
 #include <iostream>
 
-extern "C" {
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_STATIC
-#include "stb_image.h"
-}
-
-// NOTE: Testing only
-static ImTextureID test_tex;
-static int test_tex_width = 0;
-static int test_tex_height = 0;
-static stbi_uc *tex_data = nullptr;
-static stbi_uc *data_buffs[2] = { nullptr, nullptr };
-static int currbuff = 0;
-
-static Application *app = nullptr;
-
 void Rotate90CW(
     const unsigned char* src,
     unsigned char* dst,
@@ -59,13 +43,12 @@ void Rotate90CW(
     }
 }
 
-void InputVideoInit(Application &_app)
+void InputVideo::Init()
 {
-    app = &_app;
     int width = 0, height = 0, component = 0;
     tex_data = stbi_load("data\\MyImage01.jpg", &width, &height, &component, 4);
     if (tex_data) {
-        test_tex = app->CreateDynamicTexture(tex_data, width, height);
+        test_tex = m_app->CreateDynamicTexture(tex_data, width, height);
         test_tex_width = width;
         test_tex_height = height;
         data_buffs[0] = tex_data;
@@ -74,16 +57,23 @@ void InputVideoInit(Application &_app)
     }
 }
 
-bool inputLinked = false;
+void InputVideo::PreUpdate()
+{
+    if(!inputLinked) return;
+    Rotate90CW(data_buffs[currbuff], data_buffs[1-currbuff], test_tex_width, test_tex_height);
+    currbuff = 1-currbuff;
+    bool ok = m_app->UpdateTexture(test_tex, data_buffs[currbuff]);
+    //std::cout << "Texture Update:" << ok << "\n";
+}
 
-void InputVideo(bool firstframe, int &uniqueId, ImVector<LinkInfo> &links)
+void InputVideo::Update(bool firstframe, int &uniqueId) 
 {
     // Start drawing nodes.
     ed::BeginNode(uniqueId++);
         ImGui::Text("Input Video");
         ed::BeginPin(uniqueId++, ed::PinKind::Input);
             ImGui::Text("-> In");
-            inputLinked = IsPinLinked(uniqueId-1, links);
+            inputLinked = IsPinLinked(uniqueId-1, m_links);
         ed::EndPin();
         ImGui::SameLine();
         ImGui::Dummy(ImVec2((float)(test_tex_width - 90), 0)); // Hacky magic number to space out the output pin.
@@ -98,12 +88,8 @@ void InputVideo(bool firstframe, int &uniqueId, ImVector<LinkInfo> &links)
     ed::EndNode();
 }
 
-
-void UpdateVideo()
+void InputVideo::Done() 
 {
-    if(!inputLinked) return;
-    Rotate90CW(data_buffs[currbuff], data_buffs[1-currbuff], test_tex_width, test_tex_height);
-    currbuff = 1-currbuff;
-    bool ok = app->UpdateTexture(test_tex, data_buffs[currbuff]);
-    //std::cout << "Texture Update:" << ok << "\n";
+    
 }
+

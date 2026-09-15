@@ -2,7 +2,7 @@
 
 #include "imgui_node_links.h"
 
-#include "tooltip_and_popup.h"
+#include "plot_widget.h"
 
 # ifdef _MSC_VER
 # define portable_strcpy    strcpy_s
@@ -12,20 +12,23 @@
 # define portable_sprintf   sprintf
 # endif
 
+void PlotWidget::Init()
+{
 
-void PlotWidget(bool firstframe, int &uniqueId, ImVector<LinkInfo> &links)
+}
+
+void PlotWidget::Update(bool firstframe, int &uniqueId)
 {
     // Plot Widgets =========================================================================================
     // Note: most of these plots can't be used in nodes missing, because they spawn tooltips automatically,
     // so we can't trap them in our deferred pop-up mechanism.  This causes them to fly into a random screen
     // location.
     auto plot_id = uniqueId++;
-    bool inputLinked = false;
     ed::BeginNode(plot_id);
         ImGui::Text("Plot Demo");
         ed::BeginPin(uniqueId++, ed::PinKind::Input);
             ImGui::Text("-> In");
-            inputLinked = IsPinLinked(uniqueId-1, links);
+            inputLinked = IsPinLinked(uniqueId-1, m_links);
         ed::EndPin();
         ImGui::SameLine();
         ImGui::Dummy(ImVec2(250, 0)); // Hacky magic number to space out the output pin.

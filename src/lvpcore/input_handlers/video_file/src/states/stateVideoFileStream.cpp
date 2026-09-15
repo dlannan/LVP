@@ -88,7 +88,7 @@ void stateVideoFileStream::VFSOpenCommand()
     m_input->read(packet);
 
     m_source.SetFrameBuffer(&m_buffer);
-    m_source.Open("F:\\dev\\cdev\\LVP\\data\\test_video\\sample-1mb.mp4");
+    m_source.Open("data\\test_video\\sample-1mb.mp4");
 
     if (packet.envelope.target.empty())
     {

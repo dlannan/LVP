@@ -8,7 +8,12 @@
 # define portable_sprintf   sprintf
 # endif
 
-void Widgets(bool firstframe, int &uniqueId)
+void Widgets::Init()
+{
+
+}
+
+void Widgets::Update(bool firstframe, int &uniqueId)
 {
     auto& io = ImGui::GetIO();
     
@@ -18,6 +23,7 @@ void Widgets(bool firstframe, int &uniqueId)
     ImGui::Text("Basic Widget Demo");
     ed::BeginPin(uniqueId++, ed::PinKind::Input);
     ImGui::Text("-> In");
+    inputLinked = IsPinLinked(uniqueId-1, m_links);
     ed::EndPin();
     ImGui::SameLine();
     ImGui::Dummy(ImVec2(250, 0)); // Hacky magic number to space out the output pin.

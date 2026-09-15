@@ -98,36 +98,25 @@ void stateRegister::Update(int px, int py, int buttons)
 
         if (!isRegistered)
         {
-            std::cout << m_name << ": ignoring packet\n";
+            std::cout << m_name << "_register: ignoring packet\n";
             return;
         }
 
         if (packet.envelope.target != m_name)
         {
-            std::cout << m_name << ": registration response has incorrect target\n";
+            std::cout << m_name << "_register: registration response has incorrect target\n";
             return;
         }
 
-        if (m_uid != 0)
-        {
-            std::cout
-                << m_name << ": ignoring registration response; "
-                << "already registered\n";
-            m_registered = true;
-        }
-        else
-        {
-            m_input->read(packet);
-            m_uid = packet.envelope.uid;
+        m_input->read(packet);
+        m_uid = packet.envelope.uid;
 
-            std::cout
-                << m_name << ": registered with atlas uid="
-                << m_uid
-                << '\n';
-            m_registered = true;
-
-            m_smanager->ChangeState("dummy_testforward");            
-        }
+        std::cout
+            << m_name << ": registered with atlas uid="
+            << m_uid
+            << '\n';
+        m_registered = true;
+        m_smanager->ChangeState("video_file_forward");            
     }
 
     m_processed = processed;

@@ -9,8 +9,12 @@
 # define portable_sprintf   sprintf
 # endif
 
+void ToolTipAndPopup::Init()
+{
+    
+}
 
-void ToolTipAndPopup(bool firstframe, int &uniqueId)
+void ToolTipAndPopup::Update(bool firstframe, int &uniqueId)
 {
     // Tool Tip & Pop-up Demo =====================================================================================
     // Tooltips, combo-boxes, drop-down menus need to use a work-around to place the "overlay window" in the canvas.
@@ -22,6 +26,7 @@ void ToolTipAndPopup(bool firstframe, int &uniqueId)
         ImGui::Text("Tool Tip & Pop-up Demo");
         ed::BeginPin(uniqueId++, ed::PinKind::Input);
             ImGui::Text("-> In");
+            inputLinked = IsPinLinked(uniqueId-1, m_links);
         ed::EndPin();
         ImGui::SameLine();
         ImGui::Dummy(ImVec2(85, 0)); // Hacky magic number to space out the output pin.

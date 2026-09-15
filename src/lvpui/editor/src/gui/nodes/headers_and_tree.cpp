@@ -9,7 +9,12 @@
 # define portable_sprintf   sprintf
 # endif
 
-void HeadersAndTree(int firstframe, int &uniqueId)
+void HeadersAndTree::Init()
+{
+    
+}
+
+void HeadersAndTree::Update(int firstframe, int &uniqueId)
 {
     // Headers and Trees Demo =======================================================================================================
     // TreeNodes and Headers streatch to the entire remaining work area. To put them in nodes what we need to do is to tell

@@ -3,8 +3,14 @@ setlocal
 
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
+set TARGET=atlas.exe
+set RUNDIR=..\..\..\..
+
 set CONFIG=%~1
 if "%CONFIG%"=="" set CONFIG=Release
+
+set CLEAN=%~2
+if "%CLEAN%"=="" set CLEAN=NoClean
 
 if /I not "%CONFIG%"=="Debug" if /I not "%CONFIG%"=="Release" (
     echo Usage: build.bat [Debug^|Release]
@@ -12,20 +18,31 @@ if /I not "%CONFIG%"=="Debug" if /I not "%CONFIG%"=="Release" (
 )
 
 set ROOT=%~dp0
-set OUT=%ROOT%bin\%CONFIG%
-
+set OUT=%ROOT%%RUNDIR%\bin\modules\%CONFIG%
 if not exist "%OUT%" mkdir "%OUT%"
+
+if /I "%CLEAN%"=="Run" (
+    pushd %ROOT%%RUNDIR%
+    .\bin\modules\%CONFIG%\atlas.exe
+    popd
+    exit /b 2
+)
+
+if /I "%CLEAN%"=="Clean" (
+rmdir /s /q obj
+mkdir obj
+)
 
 echo.
 echo ========================================
-echo Building module.lib - %CONFIG%
+echo Building %TARGET% - %CONFIG%
 echo ========================================
 echo.
 
 if /I "%CONFIG%"=="Debug" (
-    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi /wd4100
+    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi /wd4100 /Foobj\
 ) else (
-    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2 /wd4100
+    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2 /wd4100 /Foobj\
 )
 
 if /I "%CONFIG%"=="Debug" (
@@ -54,7 +71,7 @@ cl %CFLAGS% /nologo ^
     "%ROOT%src\states\stateRegistration.cpp" ^
     "%ROOT%src\states\stateForwarding.cpp" ^
     "%ROOT%src\states\stateControl.cpp" ^
-    /Fe:%OUT%\atlas.exe ^
+    /Fe:%OUT%\%TARGET% ^
     %LINK%
 
 if not exist bin\%CONFIG% mkdir bin\%CONFIG%
@@ -65,7 +82,7 @@ del /q *.obj 2>nul
 
 echo.
 echo Built:
-echo   %OUT%\atlas.exe
+echo   %OUT%\%TARGET%
 echo.
 
 endlocal
