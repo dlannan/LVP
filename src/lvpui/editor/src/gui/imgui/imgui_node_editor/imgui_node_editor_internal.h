@@ -28,7 +28,7 @@
 # include "imgui_bezier_math.h"
 # include "imgui_canvas.h"
 
-# include "crude_json.h"
+# include "json.hpp"
 
 # include <vector>
 # include <string>
@@ -42,8 +42,8 @@ namespace Detail {
 
 //------------------------------------------------------------------------------
 namespace ed = ax::NodeEditor::Detail;
-namespace json = crude_json;
 
+using json = nlohmann::json;
 
 //------------------------------------------------------------------------------
 using std::vector;
@@ -518,10 +518,10 @@ struct NodeSettings
     void ClearDirty();
     void MakeDirty(SaveReasonFlags reason);
 
-    json::value Serialize();
+    json Serialize();
 
     static bool Parse(const std::string& string, NodeSettings& settings);
-    static bool Parse(const json::value& data, NodeSettings& result);
+    static bool Parse(const json& data, NodeSettings& result);
 };
 
 struct Settings

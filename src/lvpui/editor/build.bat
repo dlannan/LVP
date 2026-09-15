@@ -3,8 +3,13 @@ setlocal
 
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
+set TARGET=lvp_editor.exe
+
 set CONFIG=%~1
 if "%CONFIG%"=="" set CONFIG=Release
+
+set CLEAN=%~2
+if "%CLEAN%"=="" set CLEAN=NoClean
 
 if /I not "%CONFIG%"=="Debug" if /I not "%CONFIG%"=="Release" (
     echo Usage: build.bat [Debug^|Release]
@@ -15,20 +20,23 @@ set ROOT=%~dp0
 set OUT=%ROOT%bin\%CONFIG%
 
 if not exist "%OUT%" mkdir "%OUT%"
+if not exist "obj" mkdir "obj"
 
-REM This is kinda bad, but I will add some ways to handle this better. Prob move to luamake
-del /q *.obj 2>nul
+if /I "%CLEAN%"=="Clean" (
+rmdir /s /q obj
+mkdir obj
+)
 
 echo.
 echo ========================================
-echo Building editor.exe - %CONFIG%
+echo Building %TARGET% - %CONFIG%
 echo ========================================
 echo.
 
 if /I "%CONFIG%"=="Debug" (
-    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi /D_CONSOLE /wd4100 /wd4505
+    set CFLAGS=/std:c++20 /EHsc /MDd /W4 /Zi /D_CONSOLE /wd4100 /wd4505 /Foobj\
 ) else (
-    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2 /D_CONSOLE /wd4100 /wd4505
+    set CFLAGS=/std:c++20 /EHsc /MD /W4 /O2 /D_CONSOLE /wd4100 /wd4505 /Foobj\
 )
 
 if /I "%CONFIG%"=="Debug" (
@@ -72,7 +80,6 @@ cl %CFLAGS% /nologo ^
     "%ROOT%src\gui\imgui\renderer_dx11.cpp" ^
     "%ROOT%src\gui\imgui\application.cpp" ^
     ^
-    "%ROOT%src\gui\imgui\imgui_node_editor\crude_json.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_canvas.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_node_editor.cpp" ^
     "%ROOT%src\gui\imgui\imgui_node_editor\imgui_node_editor_api.cpp" ^
@@ -87,16 +94,14 @@ cl %CFLAGS% /nologo ^
     "%ROOT%src\states\stateRegister.cpp" ^
     "%ROOT%src\states\stateMain.cpp" ^
     "%ROOT%src\main.cpp" ^
-    /Fe:"%OUT%\editor.exe" ^
+    /Fe:"%OUT%\%TARGET%" ^
     %LINK%
 
 if errorlevel 1 exit /b 1
 
-del /q *.obj 2>nul
-
 echo.
 echo Built:
-echo   %OUT%\editor.exe
+echo   %OUT%\%TARGET%
 echo.
 
 endlocal

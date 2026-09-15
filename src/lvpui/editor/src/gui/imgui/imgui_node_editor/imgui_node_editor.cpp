@@ -2692,9 +2692,9 @@ void ed::NodeSettings::MakeDirty(SaveReasonFlags reason)
     m_DirtyReason = m_DirtyReason | reason;
 }
 
-ed::json::value ed::NodeSettings::Serialize()
+ed::json ed::NodeSettings::Serialize()
 {
-    json::value result;
+    json result;
     result["location"]["x"] = m_Location.x;
     result["location"]["y"] = m_Location.y;
 
@@ -2709,19 +2709,20 @@ ed::json::value ed::NodeSettings::Serialize()
 
 bool ed::NodeSettings::Parse(const std::string& string, NodeSettings& settings)
 {
-    auto settingsValue = json::value::parse(string);
+    json obj;
+    auto settingsValue = obj.parse(string);
     if (settingsValue.is_discarded())
         return false;
 
     return Parse(settingsValue, settings);
 }
 
-bool ed::NodeSettings::Parse(const json::value& data, NodeSettings& result)
+bool ed::NodeSettings::Parse(const json& data, NodeSettings& result)
 {
     if (!data.is_object())
         return false;
 
-    auto tryParseVector = [](const json::value& v, ImVec2& result) -> bool
+    auto tryParseVector = [](const json& v, ImVec2& result) -> bool
     {
         if (v.is_object())
         {
@@ -2815,7 +2816,7 @@ void ed::Settings::MakeDirty(SaveReasonFlags reason, Node* node)
 
 std::string ed::Settings::Serialize()
 {
-    json::value result;
+    json result;
 
     auto serializeObjectId = [](ObjectId id)
     {
@@ -2856,15 +2857,18 @@ std::string ed::Settings::Serialize()
 bool ed::Settings::Parse(const std::string& string, Settings& settings)
 {
     Settings result = settings;
+    json settingsValue;
+    
+    if(!string.empty())
+        settingsValue = json::parse(string);
 
-    auto settingsValue = json::value::parse(string);
     if (settingsValue.is_discarded())
         return false;
 
     if (!settingsValue.is_object())
         return false;
 
-    auto tryParseVector = [](const json::value& v, ImVec2& result) -> bool
+    auto tryParseVector = [](const json& v, ImVec2& result) -> bool
     {
         if (v.is_object() && v.contains("x") && v.contains("y"))
         {
@@ -2904,29 +2908,28 @@ bool ed::Settings::Parse(const std::string& string, Settings& settings)
     auto& nodesValue = settingsValue["nodes"];
     if (nodesValue.is_object())
     {
-        for (auto& node : nodesValue.get<json::object>())
+        for (auto& node : nodesValue.items())
         {
-            auto id = deserializeObjectId(node.first.c_str()).AsNodeId();
+            auto id = deserializeObjectId(node.key()).AsNodeId();
 
             auto nodeSettings = result.FindNode(id);
             if (!nodeSettings)
                 nodeSettings = result.AddNode(id);
 
-            NodeSettings::Parse(node.second, *nodeSettings);
+            NodeSettings::Parse(node.value(), *nodeSettings);
         }
     }
 
     auto& selectionValue = settingsValue["selection"];
     if (selectionValue.is_array())
     {
-        const auto selectionArray = selectionValue.get<json::array>();
-
+        const auto selectionArray = selectionValue;
         result.m_Selection.reserve(selectionArray.size());
         result.m_Selection.resize(0);
         for (auto& selection : selectionArray)
         {
             if (selection.is_string())
-                result.m_Selection.push_back(deserializeObjectId(selection.get<json::string>()));
+                result.m_Selection.push_back(deserializeObjectId(selection));
         }
     }
 
