@@ -86,4 +86,5 @@ _ReSharper*/
 !uv.lib
 !uv.dll 
 
-!external/DXSDK/lib/
+!d3dx11.lib
+!d3dx11d.lib
